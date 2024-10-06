@@ -1,0 +1,8 @@
+{
+  "files.associations": {
+    "*.svelte": "svelte",
+    "*.prisma": "prisma",
+    "assert.h": "c"
+  },
+  "editor.tabSize": 4
+}
