@@ -62,7 +62,10 @@ TEST_CASE(next_token_advanced)
                          "    return true;\n"
                          "} else {\n"
                          "    return false;\n"
-                         "}\n";
+                         "}\n"
+                         "\n"
+                         "10 == 10;\n"
+                         "10 != 9;\n";
 
     LexerHandle l = make_lexer(input);
 
@@ -135,6 +138,14 @@ TEST_CASE(next_token_advanced)
         { TOKEN_FALSE, "false" },
         { TOKEN_SEMICOLON, ";" },
         { TOKEN_RBRACE, "}" },
+        { TOKEN_INT, "10" },
+        { TOKEN_EQ, "==" },
+        { TOKEN_INT, "10" },
+        { TOKEN_SEMICOLON, ";" },
+        { TOKEN_INT, "10" },
+        { TOKEN_NOT_EQ, "!=" },
+        { TOKEN_INT, "9" },
+        { TOKEN_SEMICOLON, ";" },
         { TOKEN_EOF, "" }
     };
 

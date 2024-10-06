@@ -21,6 +21,8 @@ typedef enum TokenType {
     TOKEN_ASTERISK,
     TOKEN_SLASH,
 
+    TOKEN_EQ,
+    TOKEN_NOT_EQ,
     TOKEN_LT,
     TOKEN_GT,
 

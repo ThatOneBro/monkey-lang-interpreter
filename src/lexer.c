@@ -30,6 +30,8 @@ static const char *TOKEN_TYPE_STR[] = {
     [TOKEN_ASTERISK] = "*",
     [TOKEN_SLASH] = "/",
 
+    [TOKEN_EQ] = "==",
+    [TOKEN_NOT_EQ] = "!=",
     [TOKEN_LT] = "<",
     [TOKEN_GT] = ">",
 
@@ -106,6 +108,15 @@ int read_char(Lexer *lexer)
     return ret;
 }
 
+char peek_char(Lexer *lexer)
+{
+    if (lexer->read_position >= lexer->input_len) {
+        return '\0';
+    } else {
+        return lexer->input[lexer->read_position];
+    }
+}
+
 void read_identifier(Lexer *lexer, char *out)
 {
     size_t pos = lexer->position;
@@ -155,9 +166,15 @@ Token next_token(LexerHandle handle)
     Token tok;
     switch (lexer->curr_char) {
     case '=':
-        tok.type = TOKEN_ASSIGN;
-        // TODO: Check perf difference between `strcpy` and `memcpy`
-        strcpy(tok.literal, "=");
+        if (peek_char(lexer) == '=') {
+            tok.type = TOKEN_EQ;
+            strcpy(tok.literal, "==");
+            read_char(lexer);
+        } else {
+            tok.type = TOKEN_ASSIGN;
+            // TODO: Check perf difference between `strcpy` and `memcpy`
+            strcpy(tok.literal, "=");
+        }
         break;
     case '+':
         tok.type = TOKEN_PLUS;
@@ -176,8 +193,14 @@ Token next_token(LexerHandle handle)
         strcpy(tok.literal, "/");
         break;
     case '!':
-        tok.type = TOKEN_BANG;
-        strcpy(tok.literal, "!");
+        if (peek_char(lexer) == '=') {
+            tok.type = TOKEN_NOT_EQ;
+            strcpy(tok.literal, "!=");
+            read_char(lexer);
+        } else {
+            tok.type = TOKEN_BANG;
+            strcpy(tok.literal, "!");
+        }
         break;
     case '>':
         tok.type = TOKEN_GT;
