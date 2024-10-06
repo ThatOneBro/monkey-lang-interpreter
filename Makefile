@@ -1,54 +1,69 @@
+# Compiler settings
 CC = gcc
 CFLAGS = -Wall -Wextra -g
-INCLUDES = -I./src
 
 # Directories
-SRC_DIR = src
-BUILD_DIR = build
+SRC_DIR = ./src
+BUILD_DIR = ./build
+BIN_DIR = ./bin
 
-# Library name
-LIB_NAME = lexer
-LIB = $(BUILD_DIR)/lib$(LIB_NAME).a
+# Files
+REPL_SRC := $(SRC_DIR)/repl.c
+REPL_OBJ := $(BUILD_DIR)/repl.o
+REPL_BIN := $(BIN_DIR)/repl
 
-# Test executable
-TEST = $(BUILD_DIR)/lexer_test
+# Find all .c files not ending with _test.c in the src directory
+SOURCES = $(filter-out %_test.c, $(wildcard $(SRC_DIR)/*.c))
 
-# Source files
-LIB_SRC = $(SRC_DIR)/lexer.c
-TEST_SRC = $(SRC_DIR)/lexer_test.c
+# Generate object file names for non-test files
+OBJECTS = $(SOURCES:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
 
-# Object files
-LIB_OBJ = $(LIB_SRC:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
-TEST_OBJ = $(TEST_SRC:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
+# Find all test files in the src directory
+TEST_SOURCES = $(wildcard $(SRC_DIR)/*_test.c)
 
-.PHONY: all clean test directories
+# Generate names for test executables
+TEST_EXECUTABLES = $(TEST_SOURCES:$(SRC_DIR)/%_test.c=$(BUILD_DIR)/%_test)
 
-all: directories $(LIB) $(TEST)
+# Default target builds all objects and test executables
+all: $(BUILD_DIR) $(OBJECTS) $(TEST_EXECUTABLES) $(REPL_BIN)
 
-# Create build directory
-directories:
+# Rule to create build directory
+$(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-# Static library
-$(LIB): $(LIB_OBJ)
-	ar rcs $@ $^
-
-# Test executable
-$(TEST): $(TEST_OBJ) $(LIB)
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $(TEST_OBJ) -L$(BUILD_DIR) -l$(LIB_NAME)
-
-# Compile source files to object files
+# Rule to build object files from non-test .c files
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
-test: $(TEST)
-	./$(TEST)
+# Rule to build test executables
+$(BUILD_DIR)/%_test: $(SRC_DIR)/%_test.c $(BUILD_DIR)/%.o
+	$(CC) $(CFLAGS) -o $@ $^
 
+# Build repl executable
+$(REPL_BIN): $(OBJECTS) | $(BIN_DIR)
+	$(CC) $(CFLAGS) $^ -o $@
+
+$(BIN_DIR):
+	mkdir -p $@
+
+# Clean rule
 clean:
 	rm -rf $(BUILD_DIR)
 
-# Run tests automatically
-.PHONY: run_tests
-run_tests: test
-	@echo "Running tests..."
-	@./$(TEST)
+# Test command to run all test executables
+test: all
+	@for test in $(TEST_EXECUTABLES); do \
+		echo "Running $$test..."; \
+		$$test; \
+		if [ $$? -ne 0 ]; then \
+			echo "$$test failed"; \
+			exit 1; \
+		fi; \
+	done
+	@echo "All tests passed successfully!"
+
+debug-repl: clean all test
+	@./bin/repl
+
+# Phony targets
+.PHONY: all clean test debug-repl
