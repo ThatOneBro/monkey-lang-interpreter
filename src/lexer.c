@@ -10,8 +10,8 @@
 #define MAX_IDENTIFIER_SIZE 40
 #define MAX_INT_SIZE 20
 
-static const char *keywords[] = { "fn", "let" };
-static const TokenType keyword_token_map[] = { TOKEN_FUNCTION, TOKEN_LET };
+static const char *keywords[] = { "fn", "let", "true", "false", "if", "else", "return" };
+static const TokenType keyword_token_map[] = { TOKEN_FUNCTION, TOKEN_LET, TOKEN_TRUE, TOKEN_FALSE, TOKEN_IF, TOKEN_ELSE, TOKEN_RETURN };
 
 static Lexer lexers[MAX_LEXERS];
 
@@ -22,6 +22,7 @@ static const char *TOKEN_TYPE_STR[] = {
     [TOKEN_IDENT] = "IDENT",
     [TOKEN_INT] = "INT",
 
+    // Operators
     [TOKEN_ASSIGN] = "=",
     [TOKEN_PLUS] = "+",
     [TOKEN_MINUS] = "-",
@@ -32,6 +33,7 @@ static const char *TOKEN_TYPE_STR[] = {
     [TOKEN_LT] = "<",
     [TOKEN_GT] = ">",
 
+    // Delimiters
     [TOKEN_COMMA] = ",",
     [TOKEN_SEMICOLON] = ";",
     [TOKEN_LPAREN] = "(",
@@ -39,14 +41,19 @@ static const char *TOKEN_TYPE_STR[] = {
     [TOKEN_LBRACE] = "{",
     [TOKEN_RBRACE] = "}",
 
+    // Keywords
     [TOKEN_FUNCTION] = "FUNCTION",
     [TOKEN_LET] = "LET",
-
+    [TOKEN_TRUE] = "TRUE",
+    [TOKEN_FALSE] = "FALSE",
+    [TOKEN_IF] = "IF",
+    [TOKEN_ELSE] = "ELSE",
+    [TOKEN_RETURN] = "RETURN",
 };
 
 const char *token_type_to_str(TokenType t)
 {
-    assert(t >= 0 && t <= TOKEN_LET);
+    assert(t >= 0 && t <= TOKEN_RETURN);
     return TOKEN_TYPE_STR[t];
 }
 

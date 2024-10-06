@@ -35,6 +35,11 @@ typedef enum TokenType {
     // Keywords
     TOKEN_FUNCTION,
     TOKEN_LET,
+    TOKEN_TRUE,
+    TOKEN_FALSE,
+    TOKEN_IF,
+    TOKEN_ELSE,
+    TOKEN_RETURN,
 } TokenType;
 
 typedef struct Token {

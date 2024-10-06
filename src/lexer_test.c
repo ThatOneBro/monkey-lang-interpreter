@@ -56,7 +56,13 @@ TEST_CASE(next_token_advanced)
                          "};\n"
                          "let result = add(five, ten);\n"
                          "!-/*5;\n"
-                         "5 < 10 > 5;\n";
+                         "5 < 10 > 5;\n"
+                         "\n"
+                         "if (5 < 10) {\n"
+                         "    return true;\n"
+                         "} else {\n"
+                         "    return false;\n"
+                         "}\n";
 
     LexerHandle l = make_lexer(input);
 
@@ -112,6 +118,23 @@ TEST_CASE(next_token_advanced)
         { TOKEN_GT, ">" },
         { TOKEN_INT, "5" },
         { TOKEN_SEMICOLON, ";" },
+        { TOKEN_IF, "if" },
+        { TOKEN_LPAREN, "(" },
+        { TOKEN_INT, "5" },
+        { TOKEN_LT, "<" },
+        { TOKEN_INT, "10" },
+        { TOKEN_RPAREN, ")" },
+        { TOKEN_LBRACE, "{" },
+        { TOKEN_RETURN, "return" },
+        { TOKEN_TRUE, "true" },
+        { TOKEN_SEMICOLON, ";" },
+        { TOKEN_RBRACE, "}" },
+        { TOKEN_ELSE, "else" },
+        { TOKEN_LBRACE, "{" },
+        { TOKEN_RETURN, "return" },
+        { TOKEN_FALSE, "false" },
+        { TOKEN_SEMICOLON, ";" },
+        { TOKEN_RBRACE, "}" },
         { TOKEN_EOF, "" }
     };
 
