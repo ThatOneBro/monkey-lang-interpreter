@@ -19,8 +19,8 @@ static void assert_token(Token *expected, Token *actual)
 // Test function
 TEST_CASE(next_token_basic)
 {
-    char *input = "=+(){},;";
-    LexerHandle l = make_lexer(input, sizeof(input));
+    const char input[] = "=+(){},;";
+    LexerHandle l = make_lexer(input);
 
     struct {
         TokenType expected_type;
@@ -34,6 +34,9 @@ TEST_CASE(next_token_basic)
     for (int i = 0; i < num_tests; i++) {
         Token tok = next_token(l);
 
+        printf("Test %d - expected token type: %s, got: %s\n", i + 1, token_type_to_str(tests[i].expected_type), token_type_to_str(tok.type));
+        printf("Test %d - expected token literal: %s, got: %s\n", i + 1, tests[i].expected_literal, tok.literal);
+
         assert(tok.type == tests[i].expected_type);
         assert(strcmp(tok.literal, tests[i].expected_literal) == 0);
 
@@ -45,15 +48,15 @@ TEST_CASE(next_token_basic)
 
 TEST_CASE(next_token_advanced)
 {
-    char *input = "let five = 5;"
-                  "let ten = 10;"
-                  ""
-                  "let add = fn(x, y) {"
-                  "    x + y;"
-                  "};"
-                  "let result = add(five, ten);";
+    const char input[] = "let five = 5;\n"
+                         "let ten = 10;\n"
+                         "\n"
+                         "let add = fn(x, y) {\n"
+                         "    x + y;\n"
+                         "};\n"
+                         "let result = add(five, ten);\n";
 
-    LexerHandle l = make_lexer(input, sizeof(input));
+    LexerHandle l = make_lexer(input);
 
     struct {
         TokenType expected_type;
@@ -102,6 +105,9 @@ TEST_CASE(next_token_advanced)
 
     for (int i = 0; i < num_tests; i++) {
         Token tok = next_token(l);
+
+        printf("Test %d - expected token type: %s, got: %s\n", i + 1, token_type_to_str(tests[i].expected_type), token_type_to_str(tok.type));
+        printf("Test %d - expected token literal: %s, got: %s\n", i + 1, tests[i].expected_literal, tok.literal);
 
         assert(tok.type == tests[i].expected_type);
         assert(strcmp(tok.literal, tests[i].expected_literal) == 0);

@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include <memory.h>
 #include <stdio.h>
+#include <string.h>
 
 #define MAX_LEXERS 20
 #define MAX_TOKENS 200
@@ -14,13 +15,34 @@ static const TokenType keyword_token_map[] = { TOKEN_FUNCTION, TOKEN_LET };
 
 static Lexer lexers[MAX_LEXERS];
 
+static const char *TOKEN_TYPE_STR[] = {
+    [TOKEN_ILLEGAL] = "ILLEGAL",
+    [TOKEN_EOF] = "EOF",
+
+    [TOKEN_IDENT] = "IDENT",
+    [TOKEN_INT] = "INT",
+
+    [TOKEN_ASSIGN] = "=",
+    [TOKEN_PLUS] = "+",
+
+    [TOKEN_COMMA] = ",",
+    [TOKEN_SEMICOLON] = ";",
+    [TOKEN_LPAREN] = "(",
+    [TOKEN_RPAREN] = ")",
+    [TOKEN_LBRACE] = "{",
+    [TOKEN_RBRACE] = "}",
+
+    [TOKEN_FUNCTION] = "FUNCTION",
+    [TOKEN_LET] = "LET",
+};
+
 const char *token_type_to_str(TokenType t)
 {
     assert(t >= 0 && t <= TOKEN_LET);
     return TOKEN_TYPE_STR[t];
 }
 
-LexerHandle make_lexer(char *input, size_t input_len)
+LexerHandle make_lexer(char *input)
 {
     for (size_t handle = 0; handle < MAX_LEXERS; handle++) {
         if (lexers[handle].input != NULL) {
@@ -28,7 +50,7 @@ LexerHandle make_lexer(char *input, size_t input_len)
         }
         // We found an empty slot
         lexers[handle].input = input;
-        lexers[handle].input_len = input_len;
+        lexers[handle].input_len = strlen(input) + 1;
         lexers[handle].position = 0;
         lexers[handle].read_position = 0;
         lexers[handle].curr_char = '\0';
@@ -49,7 +71,7 @@ Lexer *get_lexer(LexerHandle handle)
 void cleanup_lexer(LexerHandle handle)
 {
     assert(lexers[handle].input != NULL);
-    memset(&lexers[handle], 0, sizeof(Lexer));
+    memset(&lexers[handle], 0, sizeof(struct Lexer));
 }
 
 int read_char(Lexer *lexer)
@@ -77,6 +99,7 @@ void read_identifier(Lexer *lexer, char *out)
     }
     assert(lexer->position - pos <= MAX_IDENTIFIER_SIZE);
     memcpy(out, &lexer->input[pos], lexer->position - pos);
+    out[lexer->position - pos] = '\0';
 }
 
 void read_number(Lexer *lexer, char *out)
@@ -87,11 +110,12 @@ void read_number(Lexer *lexer, char *out)
     }
     assert(lexer->position - pos <= MAX_INT_SIZE);
     memcpy(out, &lexer->input[pos], lexer->position - pos);
+    out[lexer->position - pos] = '\0';
 }
 
 void skip_whitespace(Lexer *lexer)
 {
-    while (lexer->curr_char == ' ' || lexer->curr_char == '\t' || lexer->curr_char == '\n' || lexer->curr_char == '\r') {
+    while (isspace(lexer->curr_char)) {
         read_char(lexer);
     }
 }

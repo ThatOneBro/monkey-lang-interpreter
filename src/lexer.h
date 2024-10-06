@@ -30,33 +30,12 @@ typedef enum TokenType {
     TOKEN_LET,
 } TokenType;
 
-static const char *TOKEN_TYPE_STR[] = {
-    [TOKEN_ILLEGAL] = "ILLEGAL",
-    [TOKEN_EOF] = "EOF",
-
-    [TOKEN_IDENT] = "IDENT",
-    [TOKEN_INT] = "INT",
-
-    [TOKEN_ASSIGN] = "=",
-    [TOKEN_PLUS] = "+",
-
-    [TOKEN_COMMA] = ",",
-    [TOKEN_SEMICOLON] = ";",
-    [TOKEN_LPAREN] = "(",
-    [TOKEN_RPAREN] = ")",
-    [TOKEN_LBRACE] = "{",
-    [TOKEN_RBRACE] = "}",
-
-    [TOKEN_FUNCTION] = "FUNCTION",
-    [TOKEN_LET] = "LET",
-};
-
 typedef struct Token {
     TokenType type;
     char literal[MAX_TOKEN_LITERAL_SIZE];
 } Token;
 
-static const char *token_type_to_str(TokenType t);
+extern const char *token_type_to_str(TokenType t);
 
 typedef struct Lexer {
     char *input;
@@ -68,7 +47,7 @@ typedef struct Lexer {
 
 typedef size_t LexerHandle;
 
-extern LexerHandle make_lexer(char *input, size_t input_len);
+extern LexerHandle make_lexer(char *input);
 extern Lexer *get_lexer(LexerHandle handle);
 extern void cleanup_lexer(LexerHandle handle);
 extern int read_char(Lexer *lexer);
