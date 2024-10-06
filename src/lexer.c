@@ -24,6 +24,13 @@ static const char *TOKEN_TYPE_STR[] = {
 
     [TOKEN_ASSIGN] = "=",
     [TOKEN_PLUS] = "+",
+    [TOKEN_MINUS] = "-",
+    [TOKEN_BANG] = "!",
+    [TOKEN_ASTERISK] = "*",
+    [TOKEN_SLASH] = "/",
+
+    [TOKEN_LT] = "<",
+    [TOKEN_GT] = ">",
 
     [TOKEN_COMMA] = ",",
     [TOKEN_SEMICOLON] = ";",
@@ -34,6 +41,7 @@ static const char *TOKEN_TYPE_STR[] = {
 
     [TOKEN_FUNCTION] = "FUNCTION",
     [TOKEN_LET] = "LET",
+
 };
 
 const char *token_type_to_str(TokenType t)
@@ -148,6 +156,30 @@ Token next_token(LexerHandle handle)
         tok.type = TOKEN_PLUS;
         strcpy(tok.literal, "+");
         break;
+    case '-':
+        tok.type = TOKEN_MINUS;
+        strcpy(tok.literal, "-");
+        break;
+    case '*':
+        tok.type = TOKEN_ASTERISK;
+        strcpy(tok.literal, "*");
+        break;
+    case '/':
+        tok.type = TOKEN_SLASH;
+        strcpy(tok.literal, "/");
+        break;
+    case '!':
+        tok.type = TOKEN_BANG;
+        strcpy(tok.literal, "!");
+        break;
+    case '>':
+        tok.type = TOKEN_GT;
+        strcpy(tok.literal, ">");
+        break;
+    case '<':
+        tok.type = TOKEN_LT;
+        strcpy(tok.literal, "<");
+        break;
     case '(':
         tok.type = TOKEN_LPAREN;
         strcpy(tok.literal, "(");
@@ -164,13 +196,13 @@ Token next_token(LexerHandle handle)
         tok.type = TOKEN_RBRACE;
         strcpy(tok.literal, "}");
         break;
-    case ',':
-        tok.type = TOKEN_COMMA;
-        strcpy(tok.literal, ",");
-        break;
     case ';':
         tok.type = TOKEN_SEMICOLON;
         strcpy(tok.literal, ";");
+        break;
+    case ',':
+        tok.type = TOKEN_COMMA;
+        strcpy(tok.literal, ",");
         break;
     case '\0':
         tok.type = TOKEN_EOF;

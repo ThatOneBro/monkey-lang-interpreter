@@ -11,11 +11,11 @@ LIB_NAME = lexer
 LIB = $(BUILD_DIR)/lib$(LIB_NAME).a
 
 # Test executable
-TEST = $(BUILD_DIR)/test_lexer
+TEST = $(BUILD_DIR)/lexer_test
 
 # Source files
 LIB_SRC = $(SRC_DIR)/lexer.c
-TEST_SRC = $(SRC_DIR)/test_lexer.c
+TEST_SRC = $(SRC_DIR)/lexer_test.c
 
 # Object files
 LIB_OBJ = $(LIB_SRC:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)

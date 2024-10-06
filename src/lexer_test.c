@@ -54,7 +54,9 @@ TEST_CASE(next_token_advanced)
                          "let add = fn(x, y) {\n"
                          "    x + y;\n"
                          "};\n"
-                         "let result = add(five, ten);\n";
+                         "let result = add(five, ten);\n"
+                         "!-/*5;\n"
+                         "5 < 10 > 5;\n";
 
     LexerHandle l = make_lexer(input);
 
@@ -97,6 +99,18 @@ TEST_CASE(next_token_advanced)
         { TOKEN_COMMA, "," },
         { TOKEN_IDENT, "ten" },
         { TOKEN_RPAREN, ")" },
+        { TOKEN_SEMICOLON, ";" },
+        { TOKEN_BANG, "!" },
+        { TOKEN_MINUS, "-" },
+        { TOKEN_SLASH, "/" },
+        { TOKEN_ASTERISK, "*" },
+        { TOKEN_INT, "5" },
+        { TOKEN_SEMICOLON, ";" },
+        { TOKEN_INT, "5" },
+        { TOKEN_LT, "<" },
+        { TOKEN_INT, "10" },
+        { TOKEN_GT, ">" },
+        { TOKEN_INT, "5" },
         { TOKEN_SEMICOLON, ";" },
         { TOKEN_EOF, "" }
     };
