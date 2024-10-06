@@ -71,7 +71,9 @@ typedef size_t LexerHandle;
 extern LexerHandle make_lexer(char *input, size_t input_len);
 extern Lexer *get_lexer(LexerHandle handle);
 extern void cleanup_lexer(LexerHandle handle);
-extern int read_char(LexerHandle handle);
+extern int read_char(Lexer *lexer);
+extern void read_identifier(Lexer *lexer, char *out);
+extern void skip_whitespace(Lexer *lexer);
 extern Token next_token(LexerHandle handle);
 
 #endif // LEXER_H

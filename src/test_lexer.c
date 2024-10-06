@@ -17,7 +17,7 @@ static void assert_token(Token *expected, Token *actual)
 }
 
 // Test function
-TEST_CASE(next_token_works)
+TEST_CASE(next_token_basic)
 {
     char *input = "=+(){},;";
     LexerHandle l = make_lexer(input, sizeof(input));
@@ -28,6 +28,75 @@ TEST_CASE(next_token_works)
     } tests[] = { { TOKEN_ASSIGN, "=" }, { TOKEN_PLUS, "+" }, { TOKEN_LPAREN, "(" },
         { TOKEN_RPAREN, ")" }, { TOKEN_LBRACE, "{" }, { TOKEN_RBRACE, "}" },
         { TOKEN_COMMA, "," }, { TOKEN_SEMICOLON, ";" }, { TOKEN_EOF, "" } };
+
+    int num_tests = sizeof(tests) / sizeof(tests[0]);
+
+    for (int i = 0; i < num_tests; i++) {
+        Token tok = next_token(l);
+
+        assert(tok.type == tests[i].expected_type);
+        assert(strcmp(tok.literal, tests[i].expected_literal) == 0);
+
+        printf("Test %d passed\n", i + 1);
+    }
+
+    cleanup_lexer(l);
+}
+
+TEST_CASE(next_token_advanced)
+{
+    char *input = "let five = 5;"
+                  "let ten = 10;"
+                  ""
+                  "let add = fn(x, y) {"
+                  "    x + y;"
+                  "};"
+                  "let result = add(five, ten);";
+
+    LexerHandle l = make_lexer(input, sizeof(input));
+
+    struct {
+        TokenType expected_type;
+        char *expected_literal;
+    } tests[] = {
+        { TOKEN_LET, "let" },
+        { TOKEN_IDENT, "five" },
+        { TOKEN_ASSIGN, "=" },
+        { TOKEN_INT, "5" },
+        { TOKEN_SEMICOLON, ";" },
+        { TOKEN_LET, "let" },
+        { TOKEN_IDENT, "ten" },
+        { TOKEN_ASSIGN, "=" },
+        { TOKEN_INT, "10" },
+        { TOKEN_SEMICOLON, ";" },
+        { TOKEN_LET, "let" },
+        { TOKEN_IDENT, "add" },
+        { TOKEN_ASSIGN, "=" },
+        { TOKEN_FUNCTION, "fn" },
+        { TOKEN_LPAREN, "(" },
+        { TOKEN_IDENT, "x" },
+        { TOKEN_COMMA, "," },
+        { TOKEN_IDENT, "y" },
+        { TOKEN_RPAREN, ")" },
+        { TOKEN_LBRACE, "{" },
+        { TOKEN_IDENT, "x" },
+        { TOKEN_PLUS, "+" },
+        { TOKEN_IDENT, "y" },
+        { TOKEN_SEMICOLON, ";" },
+        { TOKEN_RBRACE, "}" },
+        { TOKEN_SEMICOLON, ";" },
+        { TOKEN_LET, "let" },
+        { TOKEN_IDENT, "result" },
+        { TOKEN_ASSIGN, "=" },
+        { TOKEN_IDENT, "add" },
+        { TOKEN_LPAREN, "(" },
+        { TOKEN_IDENT, "five" },
+        { TOKEN_COMMA, "," },
+        { TOKEN_IDENT, "ten" },
+        { TOKEN_RPAREN, ")" },
+        { TOKEN_SEMICOLON, ";" },
+        { TOKEN_EOF, "" }
+    };
 
     int num_tests = sizeof(tests) / sizeof(tests[0]);
 
@@ -85,7 +154,8 @@ TEST_CASE(next_token_works)
 
 int main()
 {
-    RUN_TEST(next_token_works);
+    RUN_TEST(next_token_basic);
+    RUN_TEST(next_token_advanced);
     // RUN_TEST(simple_assignment);
     // RUN_TEST(function_declaration);
 

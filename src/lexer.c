@@ -1,10 +1,16 @@
 #include "lexer.h"
 #include <assert.h>
+#include <ctype.h>
 #include <memory.h>
 #include <stdio.h>
 
 #define MAX_LEXERS 20
 #define MAX_TOKENS 200
+#define MAX_IDENTIFIER_SIZE 40
+#define MAX_INT_SIZE 20
+
+static const char *keywords[] = { "fn", "let" };
+static const TokenType keyword_token_map[] = { TOKEN_FUNCTION, TOKEN_LET };
 
 static Lexer lexers[MAX_LEXERS];
 
@@ -26,7 +32,7 @@ LexerHandle make_lexer(char *input, size_t input_len)
         lexers[handle].position = 0;
         lexers[handle].read_position = 0;
         lexers[handle].curr_char = '\0';
-        read_char(handle);
+        read_char(&lexers[handle]);
         return handle;
     }
     // We searched the whole list, return null
@@ -46,10 +52,9 @@ void cleanup_lexer(LexerHandle handle)
     memset(&lexers[handle], 0, sizeof(Lexer));
 }
 
-int read_char(LexerHandle handle)
+int read_char(Lexer *lexer)
 {
     int ret = 0;
-    Lexer *lexer = get_lexer(handle);
 
     if (lexer->read_position >= lexer->input_len) {
         lexer->curr_char = '\0';
@@ -60,16 +65,59 @@ int read_char(LexerHandle handle)
 
     lexer->position = lexer->read_position;
     lexer->read_position++;
+
     return ret;
+}
+
+void read_identifier(Lexer *lexer, char *out)
+{
+    size_t pos = lexer->position;
+    while (isalpha(lexer->curr_char)) {
+        read_char(lexer);
+    }
+    assert(lexer->position - pos <= MAX_IDENTIFIER_SIZE);
+    memcpy(out, &lexer->input[pos], lexer->position - pos);
+}
+
+void read_number(Lexer *lexer, char *out)
+{
+    size_t pos = lexer->position;
+    while (isdigit(lexer->curr_char)) {
+        read_char(lexer);
+    }
+    assert(lexer->position - pos <= MAX_INT_SIZE);
+    memcpy(out, &lexer->input[pos], lexer->position - pos);
+}
+
+void skip_whitespace(Lexer *lexer)
+{
+    while (lexer->curr_char == ' ' || lexer->curr_char == '\t' || lexer->curr_char == '\n' || lexer->curr_char == '\r') {
+        read_char(lexer);
+    }
+}
+
+TokenType lookup_keyword(char *literal)
+{
+    for (size_t i = 0; i < sizeof(keywords) / sizeof(keywords[0]); i++) {
+        if (strcmp(literal, keywords[i]) == 0) {
+            // Strings are equal
+            return keyword_token_map[i];
+        }
+    }
+    return TOKEN_IDENT;
 }
 
 Token next_token(LexerHandle handle)
 {
-    // Get the next token
+    Lexer *lexer = get_lexer(handle);
+    skip_whitespace(lexer);
+
+    // Get the next token from the current char
     Token tok;
-    switch (lexers->curr_char) {
+    switch (lexer->curr_char) {
     case '=':
         tok.type = TOKEN_ASSIGN;
+        // TODO: Check perf difference between `strcpy` and `memcpy`
         strcpy(tok.literal, "=");
         break;
     case '+':
@@ -105,9 +153,18 @@ Token next_token(LexerHandle handle)
         strcpy(tok.literal, "");
         break;
     default:
-        printf("Unexpected character encountered\n");
-        assert(1 != 1);
+        if (isalpha(lexer->curr_char)) {
+            read_identifier(lexer, tok.literal);
+            tok.type = lookup_keyword(tok.literal);
+            return tok;
+        } else if (isdigit(lexer->curr_char)) {
+            read_number(lexer, tok.literal);
+            tok.type = TOKEN_INT;
+            return tok;
+        }
+        tok.type = TOKEN_ILLEGAL;
+        strcpy(tok.literal, &lexer->curr_char);
     }
-    read_char(handle);
+    read_char(lexer);
     return tok;
 }
