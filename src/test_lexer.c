@@ -23,8 +23,8 @@ TEST_CASE(next_token_works)
     LexerHandle l = make_lexer(input, sizeof(input));
 
     struct {
-        TokenType expectedType;
-        char *expectedLiteral;
+        TokenType expected_type;
+        char *expected_literal;
     } tests[] = { { TOKEN_ASSIGN, "=" }, { TOKEN_PLUS, "+" }, { TOKEN_LPAREN, "(" },
         { TOKEN_RPAREN, ")" }, { TOKEN_LBRACE, "{" }, { TOKEN_RBRACE, "}" },
         { TOKEN_COMMA, "," }, { TOKEN_SEMICOLON, ";" }, { TOKEN_EOF, "" } };
@@ -34,15 +34,13 @@ TEST_CASE(next_token_works)
     for (int i = 0; i < num_tests; i++) {
         Token tok = next_token(l);
 
-        assert(tok.type == tests[i].expectedType);
-        assert(strcmp(tok.literal, tests[i].expectedLiteral) == 0);
+        assert(tok.type == tests[i].expected_type);
+        assert(strcmp(tok.literal, tests[i].expected_literal) == 0);
 
         printf("Test %d passed\n", i + 1);
     }
 
-    //   free(l);
     cleanup_lexer(l);
-    //   printf("All tests passed successfully!\n");
 }
 
 // TEST_CASE(simple_assignment)
@@ -52,14 +50,15 @@ TEST_CASE(next_token_works)
 //         { TOKEN_ASSIGN, "=" }, { TOKEN_INT, "5" },
 //         { TOKEN_SEMICOLON, ";" }, { TOKEN_EOF, "EOF" } };
 
-//     Token *tokens = lex(input);
+//     LexerHandle l = make_lexer(input, sizeof(input));
 
-//     for (int i = 0; i < 6; i++) {
-//         assert_token(&expected[i], &tokens[i]);
+//     size_t expected_len = sizeof(expected) / sizeof(struct Token);
+//     for (int i = 0; i < expected_len; i++) {
+//         Token tok = next_token(l);
+//         assert_token(&expected[i], &tok);
 //     }
 
-//     // Don't forget to free the tokens if they were dynamically allocated
-//     // free(tokens);
+//     cleanup_lexer(l);
 // }
 
 // TEST_CASE(function_declaration)
@@ -73,13 +72,15 @@ TEST_CASE(next_token_works)
 //         { TOKEN_EOF, "EOF" }
 //     };
 
-//     Token *tokens = lex(input);
+//     LexerHandle l = make_lexer(input, sizeof(input));
 
-//     for (int i = 0; i < 13; i++) {
-//         assert_token(&expected[i], &tokens[i]);
+//     size_t expected_len = sizeof(expected) / sizeof(struct Token);
+//     for (int i = 0; i < expected_len; i++) {
+//         Token tok = next_token(l);
+//         assert_token(&expected[i], &tok);
 //     }
 
-//     // free(tokens);
+//     cleanup_lexer(l);
 // }
 
 int main()

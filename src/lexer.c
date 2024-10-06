@@ -63,11 +63,6 @@ int read_char(LexerHandle handle)
     return ret;
 }
 
-inline void copy_literal_into_token(Token *tok, const char literal[], size_t literal_len)
-{
-    memcpy(tok->literal, literal, literal_len);
-}
-
 Token next_token(LexerHandle handle)
 {
     // Get the next token
@@ -75,39 +70,39 @@ Token next_token(LexerHandle handle)
     switch (lexers->curr_char) {
     case '=':
         tok.type = TOKEN_ASSIGN;
-        copy_literal_into_token(&tok, "=", sizeof("="));
+        strcpy(tok.literal, "=");
         break;
     case '+':
         tok.type = TOKEN_PLUS;
-        copy_literal_into_token(&tok, "+", sizeof("+"));
+        strcpy(tok.literal, "+");
         break;
     case '(':
         tok.type = TOKEN_LPAREN;
-        copy_literal_into_token(&tok, "(", sizeof("("));
+        strcpy(tok.literal, "(");
         break;
     case ')':
         tok.type = TOKEN_RPAREN;
-        copy_literal_into_token(&tok, ")", sizeof(")"));
+        strcpy(tok.literal, ")");
         break;
     case '{':
         tok.type = TOKEN_LBRACE;
-        copy_literal_into_token(&tok, "{", sizeof("{"));
+        strcpy(tok.literal, "{");
         break;
     case '}':
         tok.type = TOKEN_RBRACE;
-        copy_literal_into_token(&tok, "}", sizeof("}"));
+        strcpy(tok.literal, "}");
         break;
     case ',':
         tok.type = TOKEN_COMMA;
-        copy_literal_into_token(&tok, ",", sizeof(","));
+        strcpy(tok.literal, ",");
         break;
     case ';':
         tok.type = TOKEN_SEMICOLON;
-        copy_literal_into_token(&tok, ";", sizeof(";"));
+        strcpy(tok.literal, ";");
         break;
     case '\0':
         tok.type = TOKEN_EOF;
-        copy_literal_into_token(&tok, "", sizeof(""));
+        strcpy(tok.literal, "");
         break;
     default:
         printf("Unexpected character encountered\n");

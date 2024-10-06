@@ -68,7 +68,6 @@ typedef struct Lexer {
 
 typedef size_t LexerHandle;
 
-extern inline void copy_literal_into_token(Token *tok, const char literal[], size_t literal_len);
 extern LexerHandle make_lexer(char *input, size_t input_len);
 extern Lexer *get_lexer(LexerHandle handle);
 extern void cleanup_lexer(LexerHandle handle);
