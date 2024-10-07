@@ -49,6 +49,7 @@ $(BIN_DIR):
 # Clean rule
 clean:
 	rm -rf $(BUILD_DIR)
+	rm -rf $(BIN_DIR)
 
 # Test command to run all test executables
 test: all

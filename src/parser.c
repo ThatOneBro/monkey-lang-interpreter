@@ -1,28 +1,22 @@
-// #include "lexer.h"
+#include "parser.h"
+#include "lexer.h"
+#include <stdlib.h>
 
-// typedef struct Parser {
-//     Lexer *lexer;
-//     Token *curr_token;
-//     Token *peek_token;
-// } Parser;
+Parser *make_parser(char *input)
+{
+    Parser *parser = malloc(sizeof(Parser));
+    init_lexer(&parser->lexer, input);
+    parse_next_token(parser);
+    parse_next_token(parser);
+}
 
-// Parser *make_parser()
-// {
-//     Parser *parser = malloc(sizeof(Parser));
-//     return parser;
-// }
+void cleanup_parser(Parser *parser)
+{
+    free(parser);
+}
 
-// void parse_next_token(Parser *parser) {
-// 	parser->curr_token = parser->peek_token;
-// 	parser->peek_token = lex_next_token()
-// 	    p.curToken = p.peekToken
-//                      p.peekToken
-//         = p.l.NextToken()
-// }
-
-//     func(p *Parser) nextToken()
-// {
-//     p.curToken = p.peekToken
-//                      p.peekToken
-//         = p.l.NextToken()
-// }
+void parse_next_token(Parser *parser)
+{
+    parser->curr_token = parser->peek_token;
+    parser->peek_token = lex_next_token(&parser->lexer);
+}

@@ -62,6 +62,7 @@ typedef struct Lexer {
     char curr_char;
 } Lexer;
 
+extern void init_lexer(Lexer *lexer, char *input);
 extern Lexer *make_lexer(char *input);
 extern void cleanup_lexer(Lexer *lexer);
 extern int read_char(Lexer *lexer);

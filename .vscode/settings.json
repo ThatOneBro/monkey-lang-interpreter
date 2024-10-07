@@ -5,7 +5,9 @@
     "assert.h": "c",
     "globals.h": "c",
     "stdlib.h": "c",
-    "stdio.h": "c"
+    "stdio.h": "c",
+    "lexer.h": "c",
+    "parser.h": "c"
   },
   "editor.tabSize": 4
 }

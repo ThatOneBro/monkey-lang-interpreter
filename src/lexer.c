@@ -52,16 +52,20 @@ const char *token_type_to_str(TokenType t)
     return TOKEN_TYPE_STR[t];
 }
 
-Lexer *make_lexer(char *input)
+void init_lexer(Lexer *lexer, char *input)
 {
-    Lexer *lexer = malloc(sizeof(struct Lexer));
-    // We found an empty slot
     lexer->input = input;
     lexer->input_len = strlen(input) + 1;
     lexer->position = 0;
     lexer->read_position = 0;
     lexer->curr_char = '\0';
     read_char(lexer);
+}
+
+Lexer *make_lexer(char *input)
+{
+    Lexer *lexer = malloc(sizeof(struct Lexer));
+    init_lexer(lexer, input);
     return lexer;
 }
 
