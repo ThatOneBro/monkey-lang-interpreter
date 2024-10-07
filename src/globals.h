@@ -1,5 +1,5 @@
-#ifndef TYPES_H
-#define TYPES_H
+#ifndef GLOBALS_H
+#define GLOBALS_H
 
 #include <stdint.h>
 
@@ -7,4 +7,4 @@
 #define TRUE 1
 #define FALSE 0
 
-#endif // TYPES_H
+#endif // GLOBALS_H

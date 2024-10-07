@@ -17,10 +17,10 @@ static void assert_token(Token *expected, Token *actual)
 }
 
 // Test function
-TEST_CASE(next_token_basic)
+TEST_CASE(lex_next_token_basic)
 {
     const char input[] = "=+(){},;";
-    LexerHandle l = make_lexer(input);
+    Lexer *l = make_lexer(input);
 
     struct {
         TokenType expected_type;
@@ -32,7 +32,7 @@ TEST_CASE(next_token_basic)
     int num_tests = sizeof(tests) / sizeof(tests[0]);
 
     for (int i = 0; i < num_tests; i++) {
-        Token tok = next_token(l);
+        Token tok = lex_next_token(l);
 
         printf("Test %d - expected token type: %s, got: %s\n", i + 1, token_type_to_str(tests[i].expected_type), token_type_to_str(tok.type));
         printf("Test %d - expected token literal: %s, got: %s\n", i + 1, tests[i].expected_literal, tok.literal);
@@ -46,7 +46,7 @@ TEST_CASE(next_token_basic)
     cleanup_lexer(l);
 }
 
-TEST_CASE(next_token_advanced)
+TEST_CASE(lex_next_token_advanced)
 {
     const char input[] = "let five = 5;\n"
                          "let ten = 10;\n"
@@ -67,7 +67,7 @@ TEST_CASE(next_token_advanced)
                          "10 == 10;\n"
                          "10 != 9;\n";
 
-    LexerHandle l = make_lexer(input);
+    Lexer *l = make_lexer(input);
 
     struct {
         TokenType expected_type;
@@ -152,7 +152,7 @@ TEST_CASE(next_token_advanced)
     int num_tests = sizeof(tests) / sizeof(tests[0]);
 
     for (int i = 0; i < num_tests; i++) {
-        Token tok = next_token(l);
+        Token tok = lex_next_token(l);
 
         printf("Test %d - expected token type: %s, got: %s\n", i + 1, token_type_to_str(tests[i].expected_type), token_type_to_str(tok.type));
         printf("Test %d - expected token literal: %s, got: %s\n", i + 1, tests[i].expected_literal, tok.literal);
@@ -208,8 +208,8 @@ TEST_CASE(next_token_advanced)
 
 int main()
 {
-    RUN_TEST(next_token_basic);
-    RUN_TEST(next_token_advanced);
+    RUN_TEST(lex_next_token_basic);
+    RUN_TEST(lex_next_token_advanced);
     // RUN_TEST(simple_assignment);
     // RUN_TEST(function_declaration);
 

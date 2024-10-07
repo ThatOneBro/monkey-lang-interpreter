@@ -32,12 +32,13 @@ char *read_input()
 
 void eval_and_print(const char *input)
 {
-    LexerHandle l = make_lexer(input);
+    Lexer *l = make_lexer(input);
     Token tok;
     while (tok.type != TOKEN_EOF) {
-        tok = next_token(l);
+        tok = lex_next_token(l);
         printf("{ type: %s, literal: %s }\n", token_type_to_str(tok.type), tok.literal);
     }
+    cleanup_lexer(l);
 }
 
 int main()

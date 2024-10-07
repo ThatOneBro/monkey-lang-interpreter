@@ -1,8 +1,11 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-#include "types.h"
+#include "globals.h"
 #include <stddef.h>
+
+#define MAX_IDENTIFIER_SIZE 40
+#define MAX_INT_SIZE 20
 #define MAX_TOKEN_LITERAL_SIZE 20
 
 typedef enum TokenType {
@@ -59,14 +62,11 @@ typedef struct Lexer {
     char curr_char;
 } Lexer;
 
-typedef size_t LexerHandle;
-
-extern LexerHandle make_lexer(char *input);
-extern Lexer *get_lexer(LexerHandle handle);
-extern void cleanup_lexer(LexerHandle handle);
+extern Lexer *make_lexer(char *input);
+extern void cleanup_lexer(Lexer *lexer);
 extern int read_char(Lexer *lexer);
 extern void read_identifier(Lexer *lexer, char *out);
 extern void skip_whitespace(Lexer *lexer);
-extern Token next_token(LexerHandle handle);
+extern Token lex_next_token(Lexer *lexer);
 
 #endif // LEXER_H

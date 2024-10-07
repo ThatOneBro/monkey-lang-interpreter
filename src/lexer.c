@@ -1,19 +1,12 @@
 #include "lexer.h"
 #include <assert.h>
 #include <ctype.h>
-#include <memory.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-
-#define MAX_LEXERS 20
-#define MAX_TOKENS 200
-#define MAX_IDENTIFIER_SIZE 40
-#define MAX_INT_SIZE 20
 
 static const char *keywords[] = { "fn", "let", "true", "false", "if", "else", "return" };
 static const TokenType keyword_token_map[] = { TOKEN_FUNCTION, TOKEN_LET, TOKEN_TRUE, TOKEN_FALSE, TOKEN_IF, TOKEN_ELSE, TOKEN_RETURN };
-
-static Lexer lexers[MAX_LEXERS];
 
 static const char *TOKEN_TYPE_STR[] = {
     [TOKEN_ILLEGAL] = "ILLEGAL",
@@ -59,36 +52,22 @@ const char *token_type_to_str(TokenType t)
     return TOKEN_TYPE_STR[t];
 }
 
-LexerHandle make_lexer(char *input)
+Lexer *make_lexer(char *input)
 {
-    for (size_t handle = 0; handle < MAX_LEXERS; handle++) {
-        if (lexers[handle].input != NULL) {
-            continue;
-        }
-        // We found an empty slot
-        lexers[handle].input = input;
-        lexers[handle].input_len = strlen(input) + 1;
-        lexers[handle].position = 0;
-        lexers[handle].read_position = 0;
-        lexers[handle].curr_char = '\0';
-        read_char(&lexers[handle]);
-        return handle;
-    }
-    // We searched the whole list, return null
-    return -1;
+    Lexer *lexer = malloc(sizeof(struct Lexer));
+    // We found an empty slot
+    lexer->input = input;
+    lexer->input_len = strlen(input) + 1;
+    lexer->position = 0;
+    lexer->read_position = 0;
+    lexer->curr_char = '\0';
+    read_char(lexer);
+    return lexer;
 }
 
-Lexer *get_lexer(LexerHandle handle)
+void cleanup_lexer(Lexer *lexer)
 {
-    assert(handle >= 0 && handle < MAX_LEXERS);
-    assert(lexers[handle].input != NULL);
-    return &lexers[handle];
-}
-
-void cleanup_lexer(LexerHandle handle)
-{
-    assert(lexers[handle].input != NULL);
-    memset(&lexers[handle], 0, sizeof(struct Lexer));
+    free(lexer);
 }
 
 int read_char(Lexer *lexer)
@@ -157,9 +136,8 @@ TokenType lookup_keyword(char *literal)
     return TOKEN_IDENT;
 }
 
-Token next_token(LexerHandle handle)
+Token lex_next_token(Lexer *lexer)
 {
-    Lexer *lexer = get_lexer(handle);
     skip_whitespace(lexer);
 
     // Get the next token from the current char

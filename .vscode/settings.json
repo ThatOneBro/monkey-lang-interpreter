@@ -2,7 +2,10 @@
   "files.associations": {
     "*.svelte": "svelte",
     "*.prisma": "prisma",
-    "assert.h": "c"
+    "assert.h": "c",
+    "globals.h": "c",
+    "stdlib.h": "c",
+    "stdio.h": "c"
   },
   "editor.tabSize": 4
 }
