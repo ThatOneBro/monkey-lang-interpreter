@@ -1,16 +1,13 @@
 #ifndef AST_H
 #define AST_H
 
+#include <stddef.h>
+
 typedef enum ASTNodeType {
     NODE_IDENTIFIER,
     NODE_NUMBER,
     NODE_LET_STATEMENT,
 } ASTNodeType;
-
-typedef struct LLNode {
-    struct LLNode *prev_node;
-    struct LLNode *next_node;
-} LLNode;
 
 typedef struct ASTNode {
     ASTNodeType type;
@@ -32,10 +29,21 @@ typedef struct ASTNode {
         //     int arg_count;
         // } function_call;
     } data;
-    LLNode list_node;
 } ASTNode;
 
+typedef struct ASTNodeArrayList {
+    ASTNode *array;
+    size_t size;
+    size_t capacity;
+} ASTNodeArrayList;
+
 extern ASTNode *make_ast_node();
-void cleanup_ast_node(ASTNode *node);
+extern void cleanup_ast_node(ASTNode *node);
+
+extern ASTNodeArrayList *make_ast_node_array_list();
+extern void add_ast_node_to_list(ASTNodeArrayList *list, ASTNode *node);
+extern ASTNode *get_ast_node_from_list(ASTNodeArrayList *list, size_t index);
+extern void set_ast_node_in_list(ASTNodeArrayList *list, size_t index, ASTNode *node);
+extern void free_ast_node_list(ASTNodeArrayList *list);
 
 #endif // AST_H

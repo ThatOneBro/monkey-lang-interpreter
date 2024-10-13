@@ -7,7 +7,8 @@
     "stdlib.h": "c",
     "stdio.h": "c",
     "lexer.h": "c",
-    "parser.h": "c"
+    "parser.h": "c",
+    "string.h": "c"
   },
   "editor.tabSize": 4
 }

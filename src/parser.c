@@ -1,6 +1,9 @@
 #include "parser.h"
+#include "ast.h"
+#include "globals.h"
 #include "lexer.h"
 #include <stdlib.h>
+#include <string.h>
 
 Parser *make_parser(char *input)
 {
@@ -19,4 +22,73 @@ void parse_next_token(Parser *parser)
 {
     parser->curr_token = parser->peek_token;
     parser->peek_token = lex_next_token(&parser->lexer);
+}
+
+ASTNodeArrayList *parse_program(Parser *parser)
+{
+    ASTNodeArrayList *list = make_ast_node_array_list();
+    while (parser->curr_token.type != TOKEN_EOF) {
+        ASTNode *node = parse_statement(parser);
+        if (node != NULL) {
+            add_ast_node_to_list(list, node);
+        }
+        parse_next_token(parser);
+    }
+}
+
+ASTNode *parse_statement(Parser *parser)
+{
+    switch (parser->curr_token.type) {
+    case TOKEN_LET:
+        return parse_let_statement(parser);
+        break;
+    default:
+        return NULL;
+    }
+}
+
+ASTNode *parse_let_statement(Parser *parser)
+{
+    ASTNode *statement_node = make_ast_node();
+    statement_node->type = NODE_LET_STATEMENT;
+
+    if (!expect_peek(parser, TOKEN_IDENT)) {
+        return NULL;
+    }
+
+    // Parse identifier
+    ASTNode *identifier_node = make_ast_node();
+    identifier_node->type = NODE_IDENTIFIER;
+    strcpy(identifier_node->data.identifier, parser->curr_token.literal);
+    statement_node->data.assignment.identifier = identifier_node;
+
+    if (!expect_peek(parser, TOKEN_ASSIGN)) {
+        return NULL;
+    }
+
+    while (!compare_curr_token_type(parser, TOKEN_SEMICOLON)) {
+        parse_next_token(parser);
+    }
+
+    return statement_node;
+}
+
+bool compare_curr_token_type(Parser *parser, TokenType tok_type)
+{
+    return parser->curr_token.type == tok_type;
+}
+
+bool compare_peek_token_type(Parser *parser, TokenType tok_type)
+{
+    return parser->peek_token.type == tok_type;
+}
+
+bool expect_peek(Parser *parser, TokenType tok_type)
+{
+    if (compare_peek_token_type(parser, tok_type)) {
+        parse_next_token(parser);
+        return TRUE;
+    }
+
+    return FALSE;
 }
