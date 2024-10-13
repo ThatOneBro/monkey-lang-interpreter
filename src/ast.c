@@ -2,11 +2,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define INITIAL_CAPACITY 10
+#define INITIAL_CAPACITY 50
 
-ASTNode *make_ast_node()
+ASTNode *make_ast_node(ASTNodeArrayList *list)
 {
-    ASTNode *ast_node = malloc(sizeof(ASTNode));
+    ASTNode *ast_node;
+    if (list == NULL) {
+        ast_node = malloc(sizeof(ASTNode));
+    } else {
+        ast_node = alloc_node_in_list(list);
+    }
     return ast_node;
 }
 
@@ -51,8 +56,41 @@ void set_ast_node_in_list(ASTNodeArrayList *list, size_t index, ASTNode *node)
     list->array[index] = *node;
 }
 
-void free_ast_node_list(ASTNodeArrayList *list)
+ASTNode *alloc_node_in_list(ASTNodeArrayList *list)
+{
+    if (list->size == list->capacity) {
+        list->capacity *= 2;
+        list->array = (ASTNode *)realloc(list->array, list->capacity * sizeof(ASTNode));
+    }
+    return &list->array[list->size++];
+}
+
+void cleanup_ast_node_list(ASTNodeArrayList *list)
 {
     free(list->array);
     free(list);
+}
+
+Program *make_program()
+{
+    Program *program = (Program *)malloc(sizeof(Program));
+    program->array = (ASTNode **)malloc(INITIAL_CAPACITY * sizeof(ASTNode *));
+    program->size = 0;
+    program->capacity = INITIAL_CAPACITY;
+    return program;
+}
+
+void cleanup_program(Program *program)
+{
+    free(program->array);
+    free(program);
+}
+
+void add_ast_node_to_program(Program *program, ASTNode *node)
+{
+    if (program->size == program->capacity) {
+        program->capacity *= 2;
+        program->array = (ASTNode **)realloc(program->array, program->capacity * sizeof(ASTNode *));
+    }
+    program->array[program->size++] = node;
 }

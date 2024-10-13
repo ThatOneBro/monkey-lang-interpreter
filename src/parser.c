@@ -9,12 +9,14 @@ Parser *make_parser(char *input)
 {
     Parser *parser = malloc(sizeof(Parser));
     init_lexer(&parser->lexer, input);
+    parser->backing_node_list = make_ast_node_array_list();
     parse_next_token(parser);
     parse_next_token(parser);
 }
 
 void cleanup_parser(Parser *parser)
 {
+    cleanup_ast_node_list(parser->backing_node_list);
     free(parser);
 }
 
@@ -24,13 +26,13 @@ void parse_next_token(Parser *parser)
     parser->peek_token = lex_next_token(&parser->lexer);
 }
 
-ASTNodeArrayList *parse_program(Parser *parser)
+Program *parse_program(Parser *parser)
 {
-    ASTNodeArrayList *list = make_ast_node_array_list();
+    Program *program = make_program();
     while (parser->curr_token.type != TOKEN_EOF) {
         ASTNode *node = parse_statement(parser);
         if (node != NULL) {
-            add_ast_node_to_list(list, node);
+            add_ast_node_to_program(program, node);
         }
         parse_next_token(parser);
     }
@@ -49,18 +51,18 @@ ASTNode *parse_statement(Parser *parser)
 
 ASTNode *parse_let_statement(Parser *parser)
 {
-    ASTNode *statement_node = make_ast_node();
-    statement_node->type = NODE_LET_STATEMENT;
+    ASTNode *node = make_ast_node(parser->backing_node_list);
+    node->type = NODE_LET_STATEMENT;
 
     if (!expect_peek(parser, TOKEN_IDENT)) {
         return NULL;
     }
 
     // Parse identifier
-    ASTNode *identifier_node = make_ast_node();
+    ASTNode *identifier_node = make_ast_node(parser->backing_node_list);
     identifier_node->type = NODE_IDENTIFIER;
     strcpy(identifier_node->data.identifier, parser->curr_token.literal);
-    statement_node->data.assignment.identifier = identifier_node;
+    node->data.assignment.identifier = identifier_node;
 
     if (!expect_peek(parser, TOKEN_ASSIGN)) {
         return NULL;
@@ -70,7 +72,7 @@ ASTNode *parse_let_statement(Parser *parser)
         parse_next_token(parser);
     }
 
-    return statement_node;
+    return node;
 }
 
 bool compare_curr_token_type(Parser *parser, TokenType tok_type)

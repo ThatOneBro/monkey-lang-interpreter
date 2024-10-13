@@ -1,6 +1,7 @@
 #ifndef AST_H
 #define AST_H
 
+#include "lexer.h"
 #include <stddef.h>
 
 typedef enum ASTNodeType {
@@ -11,6 +12,7 @@ typedef enum ASTNodeType {
 
 typedef struct ASTNode {
     ASTNodeType type;
+    char token_literal[MAX_TOKEN_LITERAL_SIZE];
     union {
         // struct {
         //     struct ASTNode *left;
@@ -37,13 +39,24 @@ typedef struct ASTNodeArrayList {
     size_t capacity;
 } ASTNodeArrayList;
 
-extern ASTNode *make_ast_node();
+typedef struct Program {
+    ASTNode **array;
+    size_t size;
+    size_t capacity;
+} Program;
+
+extern ASTNode *make_ast_node(ASTNodeArrayList *list);
 extern void cleanup_ast_node(ASTNode *node);
 
 extern ASTNodeArrayList *make_ast_node_array_list();
 extern void add_ast_node_to_list(ASTNodeArrayList *list, ASTNode *node);
 extern ASTNode *get_ast_node_from_list(ASTNodeArrayList *list, size_t index);
 extern void set_ast_node_in_list(ASTNodeArrayList *list, size_t index, ASTNode *node);
-extern void free_ast_node_list(ASTNodeArrayList *list);
+extern ASTNode *alloc_node_in_list(ASTNodeArrayList *list);
+extern void cleanup_ast_node_list(ASTNodeArrayList *list);
+
+extern Program *make_program();
+extern void cleanup_program(Program *program);
+extern void add_ast_node_to_program(Program *program, ASTNode *node);
 
 #endif // AST_H

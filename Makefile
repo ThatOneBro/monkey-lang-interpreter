@@ -36,7 +36,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Rule to build test executables
-$(BUILD_DIR)/%_test: $(SRC_DIR)/%_test.c $(BUILD_DIR)/%.o
+$(BUILD_DIR)/%_test: $(SRC_DIR)/%_test.c $(filter-out $(BUILD_DIR)/repl.o,$(wildcard $(BUILD_DIR)/*.o))
 	$(CC) $(CFLAGS) -o $@ $^
 
 # Build repl executable
