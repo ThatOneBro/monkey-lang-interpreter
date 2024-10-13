@@ -1,13 +1,10 @@
-#include "lexer.h" // Assume this contains the Token definition and read_char() function
+#include "lexer.h"
+#include "test_utils.h"
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
 
-#define TEST_CASE(name) static void test_##name()
-#define RUN_TEST(name)                     \
-    printf("Running test_%s...\n", #name); \
-    test_##name();                         \
-    printf("test_%s passed.\n\n", #name)
+INIT_TEST_HARNESS()
 
 // Helper function to compare tokens
 static void assert_token(Token *expected, Token *actual)
@@ -206,13 +203,4 @@ TEST_CASE(lex_next_token_advanced)
 //     cleanup_lexer(l);
 // }
 
-int main()
-{
-    RUN_TEST(lex_next_token_basic);
-    RUN_TEST(lex_next_token_advanced);
-    // RUN_TEST(simple_assignment);
-    // RUN_TEST(function_declaration);
-
-    printf("All tests passed!\n");
-    return 0;
-}
+RUN_TESTS()
