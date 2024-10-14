@@ -13,7 +13,20 @@ void assert_let_statement(ASTNode *statement, char *expected_identifier)
     assert(strcmp(statement->data.assignment.identifier->data.identifier, expected_identifier) == 0);
 }
 
-TEST_CASE(let_statement)
+void check_parser_errors(Parser *parser)
+{
+    if (parser->errors->size == 0) {
+        return;
+    }
+    printf("Parser encountered %d error(s)\n", parser->errors->size);
+    for (size_t i = 0; i < parser->errors->size; i++) {
+        // Print error
+        printf("%s\n", get_error_from_arraylist(parser->errors, i));
+    }
+    assert(1 != 1);
+}
+
+TEST_CASE(let_statements)
 {
     const char input[]
         = "let x = 5;\n"
@@ -22,6 +35,8 @@ TEST_CASE(let_statement)
 
     Parser *parser = make_parser(input);
     Program *program = parse_program(parser);
+
+    check_parser_errors(parser);
 
     assert(program != NULL);
     assert(program->size == 3);

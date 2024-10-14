@@ -2,9 +2,12 @@
 #include "ast.h"
 #include "globals.h"
 #include "lexer.h"
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#define INITIAL_ERROR_CAPACITY 25
 
 static Token EMPTY_TOKEN = { TOKEN_ILLEGAL, "\0" };
 
@@ -16,6 +19,7 @@ Parser *make_parser(char *input)
     }
     init_lexer(&parser->lexer, input);
     parser->backing_node_list = make_ast_node_array_list();
+    parser->errors = make_error_arraylist();
     memcpy(&parser->curr_token, &EMPTY_TOKEN, sizeof(Token));
     memcpy(&parser->peek_token, &EMPTY_TOKEN, sizeof(Token));
     parse_next_token(parser);
@@ -26,6 +30,7 @@ Parser *make_parser(char *input)
 void cleanup_parser(Parser *parser)
 {
     cleanup_ast_node_list(parser->backing_node_list);
+    cleanup_error_arraylist(parser->errors);
     free(parser);
 }
 
@@ -93,6 +98,40 @@ ASTNode *parse_let_statement(Parser *parser)
     return node;
 }
 
+ErrorArrayList *make_error_arraylist()
+{
+    ErrorArrayList *list = malloc(sizeof(ErrorArrayList));
+    list->array = calloc(INITIAL_ERROR_CAPACITY, sizeof(char *));
+    list->size = 0;
+    list->capacity = INITIAL_ERROR_CAPACITY;
+    return list;
+}
+
+void add_error_to_arraylist(ErrorArrayList *list, char *error)
+{
+    if (list->size == list->capacity) {
+        list->capacity *= 2;
+        list->array = (char **)realloc(list->array, list->capacity * sizeof(char *));
+        memset(&list->array[list->size], 0, list->capacity);
+    }
+    list->array[list->size++] = error;
+}
+
+char *get_error_from_arraylist(ErrorArrayList *list, size_t index)
+{
+    assert(index >= 0 && index < list->size);
+    return list->array[index];
+}
+
+void cleanup_error_arraylist(ErrorArrayList *list)
+{
+    for (size_t i = 0; i < list->size; i++) {
+        free(list->array[i]);
+    }
+    free(list->array);
+    free(list);
+}
+
 inline bool compare_curr_token_type(Parser *parser, TokenType tok_type)
 {
     return parser->curr_token.type == tok_type;
@@ -108,7 +147,16 @@ inline bool expect_peek(Parser *parser, TokenType tok_type)
     if (compare_peek_token_type(parser, tok_type)) {
         parse_next_token(parser);
         return TRUE;
+    } else {
+        add_peek_error(parser, tok_type);
+        return FALSE;
     }
+}
 
-    return FALSE;
+inline void *report_peek_error(Parser *parser, TokenType tok_type)
+{
+    size_t needed = snprintf(NULL, 0, "Expected next token to be %s, got %s instead", token_type_to_str(tok_type), token_type_to_str(parser->peek_token.type)) + 1;
+    char *error = malloc(needed);
+    sprintf(error, "Expected next token to be %s, got %s instead", token_type_to_str(tok_type), token_type_to_str(parser->peek_token.type));
+    add_error_to_arraylist(parser->errors, error);
 }
