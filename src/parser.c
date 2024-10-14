@@ -63,6 +63,9 @@ ASTNode *parse_statement(Parser *parser)
     case TOKEN_LET:
         return parse_let_statement(parser);
         break;
+    case TOKEN_RETURN:
+        return parse_return_statement(parser);
+        break;
     default:
         return NULL;
     }
@@ -90,6 +93,23 @@ ASTNode *parse_let_statement(Parser *parser)
     if (!expect_peek(parser, TOKEN_ASSIGN)) {
         return NULL;
     }
+
+    while (!compare_curr_token_type(parser, TOKEN_SEMICOLON)) {
+        parse_next_token(parser);
+    }
+
+    return node;
+}
+
+ASTNode *parse_return_statement(Parser *parser)
+{
+    ASTNode *node = make_ast_node(parser->backing_node_list);
+    node->type = NODE_RETURN_STATEMENT;
+    strcpy(&node->token_literal, "return");
+
+    parse_next_token(parser);
+
+    // TODO: Parse expressions
 
     while (!compare_curr_token_type(parser, TOKEN_SEMICOLON)) {
         parse_next_token(parser);
@@ -148,7 +168,7 @@ inline bool expect_peek(Parser *parser, TokenType tok_type)
         parse_next_token(parser);
         return TRUE;
     } else {
-        add_peek_error(parser, tok_type);
+        report_peek_error(parser, tok_type);
         return FALSE;
     }
 }

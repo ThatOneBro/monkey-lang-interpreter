@@ -8,6 +8,7 @@ typedef enum ASTNodeType {
     NODE_IDENTIFIER,
     NODE_NUMBER,
     NODE_LET_STATEMENT,
+    NODE_RETURN_STATEMENT,
 } ASTNodeType;
 
 typedef struct ASTNode {
@@ -21,6 +22,7 @@ typedef struct ASTNode {
         // } binary_op;
         double number;
         char identifier[MAX_IDENTIFIER_SIZE];
+        struct ASTNode *return_value;
         struct {
             struct ASTNode *identifier;
             struct ASTNode *value;

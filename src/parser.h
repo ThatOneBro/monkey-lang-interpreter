@@ -25,6 +25,7 @@ extern void parse_next_token(Parser *parser);
 extern Program *parse_program(Parser *parser);
 extern ASTNode *parse_statement(Parser *parser);
 extern ASTNode *parse_let_statement(Parser *parser);
+extern ASTNode *parse_return_statement(Parser *parser);
 
 extern ErrorArrayList *make_error_arraylist();
 extern void add_error_to_arraylist(ErrorArrayList *list, char *error);

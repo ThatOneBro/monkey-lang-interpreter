@@ -6,13 +6,6 @@
 
 INIT_TEST_HARNESS()
 
-void assert_let_statement(ASTNode *statement, char *expected_identifier)
-{
-    assert(strcmp(statement->token_literal, "let") == 0);
-    assert(strcmp(statement->data.assignment.identifier->token_literal, expected_identifier) == 0);
-    assert(strcmp(statement->data.assignment.identifier->data.identifier, expected_identifier) == 0);
-}
-
 void check_parser_errors(Parser *parser)
 {
     if (parser->errors->size == 0) {
@@ -50,7 +43,35 @@ TEST_CASE(let_statements)
     for (int i = 0; i < num_tests; i++) {
         ASTNode *statement = get_nth_statement(program, i);
         assert(statement != NULL);
-        assert_let_statement(statement, tests[i].expected_identifier);
+
+        assert(strcmp(statement->token_literal, "let") == 0);
+        assert(strcmp(statement->data.assignment.identifier->token_literal, tests[i].expected_identifier) == 0);
+        assert(strcmp(statement->data.assignment.identifier->data.identifier, tests[i].expected_identifier) == 0);
+    }
+
+    cleanup_program(program);
+    cleanup_parser(parser);
+}
+
+TEST_CASE(return_statements)
+{
+    const char input[]
+        = "return 5;\n"
+          "return 10;\n"
+          "return 993322;\n";
+
+    Parser *parser = make_parser(input);
+    Program *program = parse_program(parser);
+
+    check_parser_errors(parser);
+
+    assert(program != NULL);
+    assert(program->size == 3);
+
+    for (int i = 0; i < program->size; i++) {
+        ASTNode *statement = get_nth_statement(program, i);
+        assert(statement != NULL);
+        assert(strcmp(statement->token_literal, "return") == 0);
     }
 
     cleanup_program(program);
