@@ -15,7 +15,7 @@ void assert_let_statement(ASTNode *statement, char *expected_identifier)
 
 TEST_CASE(let_statement)
 {
-    const char *input
+    const char input[]
         = "let x = 5;\n"
           "let y = 10;\n"
           "let foobar = 838383;\n";
@@ -33,7 +33,7 @@ TEST_CASE(let_statement)
     int num_tests = sizeof(tests) / sizeof(tests[0]);
 
     for (int i = 0; i < num_tests; i++) {
-        ASTNode *statement = get_ast_node_from_list(program, i);
+        ASTNode *statement = get_nth_statement(program, i);
         assert(statement != NULL);
         assert_let_statement(statement, tests[i].expected_identifier);
     }

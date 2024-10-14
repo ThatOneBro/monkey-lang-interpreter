@@ -8,50 +8,6 @@
 static const char *keywords[] = { "fn", "let", "true", "false", "if", "else", "return" };
 static const TokenType keyword_token_map[] = { TOKEN_FUNCTION, TOKEN_LET, TOKEN_TRUE, TOKEN_FALSE, TOKEN_IF, TOKEN_ELSE, TOKEN_RETURN };
 
-static const char *TOKEN_TYPE_STR[] = {
-    [TOKEN_ILLEGAL] = "ILLEGAL",
-    [TOKEN_EOF] = "EOF",
-
-    [TOKEN_IDENT] = "IDENT",
-    [TOKEN_INT] = "INT",
-
-    // Operators
-    [TOKEN_ASSIGN] = "=",
-    [TOKEN_PLUS] = "+",
-    [TOKEN_MINUS] = "-",
-    [TOKEN_BANG] = "!",
-    [TOKEN_ASTERISK] = "*",
-    [TOKEN_SLASH] = "/",
-
-    [TOKEN_EQ] = "==",
-    [TOKEN_NOT_EQ] = "!=",
-    [TOKEN_LT] = "<",
-    [TOKEN_GT] = ">",
-
-    // Delimiters
-    [TOKEN_COMMA] = ",",
-    [TOKEN_SEMICOLON] = ";",
-    [TOKEN_LPAREN] = "(",
-    [TOKEN_RPAREN] = ")",
-    [TOKEN_LBRACE] = "{",
-    [TOKEN_RBRACE] = "}",
-
-    // Keywords
-    [TOKEN_FUNCTION] = "FUNCTION",
-    [TOKEN_LET] = "LET",
-    [TOKEN_TRUE] = "TRUE",
-    [TOKEN_FALSE] = "FALSE",
-    [TOKEN_IF] = "IF",
-    [TOKEN_ELSE] = "ELSE",
-    [TOKEN_RETURN] = "RETURN",
-};
-
-const char *token_type_to_str(TokenType t)
-{
-    assert(t >= 0 && t <= TOKEN_RETURN);
-    return TOKEN_TYPE_STR[t];
-}
-
 void init_lexer(Lexer *lexer, char *input)
 {
     lexer->input = input;
@@ -145,7 +101,7 @@ Token lex_next_token(Lexer *lexer)
     skip_whitespace(lexer);
 
     // Get the next token from the current char
-    Token tok;
+    Token tok = { 0 };
     switch (lexer->curr_char) {
     case '=':
         if (peek_char(lexer) == '=') {
@@ -229,9 +185,11 @@ Token lex_next_token(Lexer *lexer)
             read_number(lexer, tok.literal);
             tok.type = TOKEN_INT;
             return tok;
+        } else {
+            tok.type = TOKEN_ILLEGAL;
+            tok.literal[0] = lexer->curr_char;
+            tok.literal[1] = '\0';
         }
-        tok.type = TOKEN_ILLEGAL;
-        strcpy(tok.literal, &lexer->curr_char);
     }
     read_char(lexer);
     return tok;

@@ -1,7 +1,7 @@
 #ifndef AST_H
 #define AST_H
 
-#include "lexer.h"
+#include "token.h"
 #include <stddef.h>
 
 typedef enum ASTNodeType {
@@ -20,7 +20,7 @@ typedef struct ASTNode {
         //     char op;
         // } binary_op;
         double number;
-        char *identifier;
+        char identifier[MAX_IDENTIFIER_SIZE];
         struct {
             struct ASTNode *identifier;
             struct ASTNode *value;
@@ -58,5 +58,6 @@ extern void cleanup_ast_node_list(ASTNodeArrayList *list);
 extern Program *make_program();
 extern void cleanup_program(Program *program);
 extern void add_ast_node_to_program(Program *program, ASTNode *node);
+extern ASTNode *get_nth_statement(Program *program, size_t n);
 
 #endif // AST_H

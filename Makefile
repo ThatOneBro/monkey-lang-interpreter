@@ -1,6 +1,6 @@
 # Compiler settings
 CC = gcc
-CFLAGS = -Wall -Wextra -g
+CFLAGS = -Wall -Wextra -g -fsanitize=address
 
 # Directories
 SRC_DIR = ./src
@@ -24,8 +24,15 @@ TEST_SOURCES = $(wildcard $(SRC_DIR)/*_test.c)
 # Generate names for test executables
 TEST_EXECUTABLES = $(TEST_SOURCES:$(SRC_DIR)/%_test.c=$(BUILD_DIR)/%_test)
 
+# Define dependencies (adjust these based on your actual dependencies)
+$(BUILD_DIR)/token.o:
+$(BUILD_DIR)/lexer.o: $(BUILD_DIR)/token.o
+$(BUILD_DIR)/ast.o: $(BUILD_DIR)/token.o
+$(BUILD_DIR)/parser.o: $(BUILD_DIR)/lexer.o $(BUILD_DIR)/ast.o
+$(BUILD_DIR)/repl.o: $(BUILD_DIR)/lexer.o
+
 # Default target builds all objects and test executables
-all: $(BUILD_DIR) $(OBJECTS) $(TEST_EXECUTABLES) $(REPL_BIN)
+all: $(BUILD_DIR) $(BIN_DIR) $(OBJECTS) $(TEST_EXECUTABLES) $(REPL_BIN)
 
 # Rule to create build directory
 $(BUILD_DIR):
@@ -52,7 +59,7 @@ clean:
 	rm -rf $(BIN_DIR)
 
 # Test command to run all test executables
-test: all
+test: clean all
 	@for test in $(TEST_EXECUTABLES); do \
 		echo "Running $$test..."; \
 		$$test; \
@@ -63,7 +70,7 @@ test: all
 	done
 	@echo "All tests passed successfully!"
 
-debug-repl: clean all test
+debug-repl: test
 	@./bin/repl
 
 # Phony targets

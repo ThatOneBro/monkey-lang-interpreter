@@ -8,7 +8,8 @@
     "stdio.h": "c",
     "lexer.h": "c",
     "parser.h": "c",
-    "string.h": "c"
+    "string.h": "c",
+    "token.h": "c"
   },
   "editor.tabSize": 4
 }
