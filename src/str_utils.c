@@ -1,5 +1,6 @@
 #include "str_utils.h"
 #include "arrlist_utils.h"
+#include "globals.h"
 #include <assert.h>
 #include <stddef.h>
 
@@ -27,11 +28,12 @@ char *concat_cstrs(const char **strings, size_t count)
 
 String *make_string(void)
 {
-    String *str = malloc(sizeof(String));
-    str->capacity = INITIAL_STRING_CAPACITY;
-    str->size = 1;
-    str->array = malloc(str->capacity * sizeof(char));
-    str->array[0] = '\0';
+    String *string = malloc(sizeof(String));
+    string->capacity = INITIAL_STRING_CAPACITY;
+    string->size = 1;
+    string->array = malloc(string->capacity * sizeof(char));
+    string->array[0] = '\0';
+    return string;
 }
 
 void cleanup_string(String *str)
@@ -42,8 +44,12 @@ void cleanup_string(String *str)
 
 void concat_strings(String *target, String *source)
 {
-    if (target->size + source->size > target->capacity) {
+    bool should_realloc = FALSE;
+    while (target->size + source->size > target->capacity) {
         target->capacity *= 2;
+        should_realloc = TRUE;
+    }
+    if (should_realloc) {
         target->array = realloc_backing_array(target->array, target->size, target->capacity, sizeof(char));
     }
     strcpy(&target->array[target->size - 1], source->array); // -1 to account for writing over the sentinel character
@@ -53,9 +59,13 @@ void concat_strings(String *target, String *source)
 
 void copy_str_into_string(String *target, char *source)
 {
-    size_t source_len = strlen(source);
-    if (target->size + source_len > target->capacity) {
+    size_t source_len = strlen(source) + 1; // strlen doesn't include null terminator
+    bool should_realloc = FALSE;
+    while (target->size + source_len > target->capacity) {
         target->capacity *= 2;
+        should_realloc = TRUE;
+    }
+    if (should_realloc) {
         target->array = realloc_backing_array(target->array, target->size, target->capacity, sizeof(char));
     }
     strcpy(&target->array[target->size - 1], source); // -1 to account for writing over the sentinel character

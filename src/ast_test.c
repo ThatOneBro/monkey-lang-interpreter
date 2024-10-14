@@ -21,11 +21,13 @@ TEST_CASE(program_to_str)
     strcpy(&ident_node->token_literal, "myVar");
     strcpy(&ident_node->data.identifier, "myVar");
 
+    let_stmt_node->data.let_stmt.left = ident_node;
+
     // Right node
     ASTNode *value_node = make_ast_node(node_list);
     value_node->type = NODE_IDENTIFIER;
-    strcpy(&ident_node->token_literal, "anotherVar");
-    strcpy(&ident_node->data.identifier, "anotherVar");
+    strcpy(&value_node->token_literal, "anotherVar");
+    strcpy(&value_node->data.identifier, "anotherVar");
 
     let_stmt_node->data.let_stmt.right = value_node;
 

@@ -151,10 +151,17 @@ char *node_to_str(ASTNode *node)
         return NULL;
         // char *expr_str = expr_to_str(node->data.expr_stmt);
         // return expr_str;
+    case NODE_IDENTIFIER:
+        // TODO: Handle with expr_to_str?
+        assert(node->data.identifier);
+        assert(node->token_literal);
+        return strdup(node->token_literal);
     default:
+        printf("Node type: %d\n", node->type);
         assert(1 != 1);
     }
 
+    printf("String val: %s", string->array);
     char *str = get_str_from_string(string);
     cleanup_string(string);
     return str;
@@ -163,6 +170,9 @@ char *node_to_str(ASTNode *node)
 char *program_to_str(Program *program)
 {
     char **strs = malloc(program->size * sizeof(char *));
+    for (size_t i = 0; i < program->size; i++) {
+        strs[i] = node_to_str(program->array[i]);
+    }
     char *result = concat_cstrs(strs, program->size);
     for (size_t i = 0; i < program->size; i++) {
         free(strs[i]);
