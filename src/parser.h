@@ -27,7 +27,7 @@ extern ASTNode *parse_statement(Parser *parser);
 extern ASTNode *parse_let_statement(Parser *parser);
 extern ASTNode *parse_return_statement(Parser *parser);
 
-extern ErrorArrayList *make_error_arraylist();
+extern ErrorArrayList *make_error_arraylist(void);
 extern void add_error_to_arraylist(ErrorArrayList *list, char *error);
 extern char *get_error_from_arraylist(ErrorArrayList *list, size_t index);
 extern void cleanup_error_arraylist(ErrorArrayList *list);

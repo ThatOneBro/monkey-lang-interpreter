@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "arrlist_utils.h"
 #include "ast.h"
 #include "globals.h"
 #include "lexer.h"
@@ -74,7 +75,7 @@ ASTNode *parse_statement(Parser *parser)
 ASTNode *parse_let_statement(Parser *parser)
 {
     ASTNode *node = make_ast_node(parser->backing_node_list);
-    node->type = NODE_LET_STATEMENT;
+    node->type = NODE_LET_STMT;
     strcpy(&node->token_literal, "let");
 
     if (!expect_peek(parser, TOKEN_IDENT)) {
@@ -88,7 +89,7 @@ ASTNode *parse_let_statement(Parser *parser)
     strcpy(identifier_node->data.identifier, parser->curr_token.literal);
     strcpy(identifier_node->token_literal, parser->curr_token.literal);
 
-    node->data.assignment.identifier = identifier_node;
+    node->data.let_stmt.left = identifier_node;
 
     if (!expect_peek(parser, TOKEN_ASSIGN)) {
         return NULL;
@@ -104,7 +105,7 @@ ASTNode *parse_let_statement(Parser *parser)
 ASTNode *parse_return_statement(Parser *parser)
 {
     ASTNode *node = make_ast_node(parser->backing_node_list);
-    node->type = NODE_RETURN_STATEMENT;
+    node->type = NODE_RETURN_STMT;
     strcpy(&node->token_literal, "return");
 
     parse_next_token(parser);
@@ -118,7 +119,7 @@ ASTNode *parse_return_statement(Parser *parser)
     return node;
 }
 
-ErrorArrayList *make_error_arraylist()
+ErrorArrayList *make_error_arraylist(void)
 {
     ErrorArrayList *list = malloc(sizeof(ErrorArrayList));
     list->array = calloc(INITIAL_ERROR_CAPACITY, sizeof(char *));
@@ -131,8 +132,7 @@ void add_error_to_arraylist(ErrorArrayList *list, char *error)
 {
     if (list->size == list->capacity) {
         list->capacity *= 2;
-        list->array = (char **)realloc(list->array, list->capacity * sizeof(char *));
-        memset(&list->array[list->size], 0, list->capacity);
+        list->array = (char **)realloc_backing_array(list->array, list->size, list->capacity, sizeof(char *));
     }
     list->array[list->size++] = error;
 }
@@ -175,8 +175,8 @@ inline bool expect_peek(Parser *parser, TokenType tok_type)
 
 inline void *report_peek_error(Parser *parser, TokenType tok_type)
 {
-    size_t needed = snprintf(NULL, 0, "Expected next token to be %s, got %s instead", token_type_to_str(tok_type), token_type_to_str(parser->peek_token.type)) + 1;
-    char *error = malloc(needed);
+    size_t total_len = snprintf(NULL, 0, "Expected next token to be %s, got %s instead", token_type_to_str(tok_type), token_type_to_str(parser->peek_token.type));
+    char *error = malloc(total_len + 1); // We add one for sentinel character '\0'
     sprintf(error, "Expected next token to be %s, got %s instead", token_type_to_str(tok_type), token_type_to_str(parser->peek_token.type));
     add_error_to_arraylist(parser->errors, error);
 }

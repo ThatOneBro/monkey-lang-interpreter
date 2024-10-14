@@ -5,13 +5,13 @@
 
 #define MAX_INPUT 1024
 
-void print_prompt()
+void print_prompt(void)
 {
     printf(">> ");
     fflush(stdout);
 }
 
-char *read_input()
+char *read_input(void)
 {
     char *input = malloc(MAX_INPUT);
     if (!input) {
@@ -41,7 +41,7 @@ void eval_and_print(const char *input)
     cleanup_lexer(l);
 }
 
-int main()
+int main(void)
 {
     char *input;
 

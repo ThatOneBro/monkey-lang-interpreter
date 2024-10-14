@@ -45,8 +45,8 @@ TEST_CASE(let_statements)
         assert(statement != NULL);
 
         assert(strcmp(statement->token_literal, "let") == 0);
-        assert(strcmp(statement->data.assignment.identifier->token_literal, tests[i].expected_identifier) == 0);
-        assert(strcmp(statement->data.assignment.identifier->data.identifier, tests[i].expected_identifier) == 0);
+        assert(strcmp(statement->data.let_stmt.left->token_literal, tests[i].expected_identifier) == 0);
+        assert(strcmp(statement->data.let_stmt.left->data.identifier, tests[i].expected_identifier) == 0);
     }
 
     cleanup_program(program);

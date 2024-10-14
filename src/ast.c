@@ -1,6 +1,7 @@
 #include "ast.h"
+#include "arrlist_utils.h"
+#include "str_utils.h"
 #include <assert.h>
-#include <memory.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,10 +21,13 @@ ASTNode *make_ast_node(ASTNodeArrayList *list)
 
 void cleanup_ast_node(ASTNode *node)
 {
+    if (node == NULL) {
+        return;
+    }
     free(node);
 }
 
-ASTNodeArrayList *make_ast_node_array_list()
+ASTNodeArrayList *make_ast_node_array_list(void)
 {
     ASTNodeArrayList *list = (ASTNodeArrayList *)malloc(sizeof(ASTNodeArrayList));
     list->array = (ASTNode *)calloc(INITIAL_CAPACITY, sizeof(ASTNode));
@@ -36,8 +40,7 @@ void add_ast_node_to_list(ASTNodeArrayList *list, ASTNode *node)
 {
     if (list->size == list->capacity) {
         list->capacity *= 2;
-        list->array = (ASTNode *)realloc(list->array, list->capacity * sizeof(ASTNode));
-        memset(&list->array[list->size], 0, list->capacity);
+        list->array = (ASTNode *)realloc_backing_array(list->array, list->size, list->capacity, sizeof(ASTNode));
     }
     list->array[list->size++] = *node;
 }
@@ -64,8 +67,7 @@ ASTNode *alloc_node_in_list(ASTNodeArrayList *list)
 {
     if (list->size == list->capacity) {
         list->capacity *= 2;
-        list->array = (ASTNode *)realloc(list->array, list->capacity * sizeof(ASTNode));
-        memset(&list->array[list->size], 0, list->capacity);
+        list->array = (ASTNode *)realloc_backing_array(list->array, list->size, list->capacity, sizeof(ASTNode));
     }
     return &list->array[list->size++];
 }
@@ -76,7 +78,7 @@ void cleanup_ast_node_list(ASTNodeArrayList *list)
     free(list);
 }
 
-Program *make_program()
+Program *make_program(void)
 {
     Program *program = (Program *)malloc(sizeof(Program));
     program->array = (ASTNode **)calloc(INITIAL_CAPACITY, sizeof(ASTNode *));
@@ -95,8 +97,7 @@ void add_ast_node_to_program(Program *program, ASTNode *node)
 {
     if (program->size == program->capacity) {
         program->capacity *= 2;
-        program->array = (ASTNode **)realloc(program->array, program->capacity * sizeof(ASTNode *));
-        memset(&program->array[program->size], 0, program->capacity);
+        program->array = (ASTNode **)realloc_backing_array(program->array, program->size, program->capacity, sizeof(ASTNode *));
     }
     program->array[program->size++] = node;
 }
@@ -105,4 +106,67 @@ ASTNode *get_nth_statement(Program *program, size_t n)
 {
     assert(n >= 0 && n < program->size);
     return program->array[n];
+}
+
+// char *expr_to_str(ASTNode *node)
+// {
+//     switch (node->type) {
+//     case NODE_BINARY_EXPR:
+//         break;
+//     }
+// }
+
+char *node_to_str(ASTNode *node)
+{
+    String *string = make_string();
+    switch (node->type) {
+    case NODE_LET_STMT:
+        copy_str_into_string(string, "let ");
+        copy_str_into_string(string, node->data.let_stmt.left->data.identifier);
+        copy_str_into_string(string, " = ");
+
+        if (node->data.let_stmt.right) {
+            char *value_str = node_to_str(node->data.let_stmt.right);
+            copy_str_into_string(string, value_str);
+            free(value_str);
+        }
+
+        copy_str_into_string(string, ";");
+        break;
+    case NODE_RETURN_STMT:
+        copy_str_into_string(string, "return ");
+
+        if (node->data.return_stmt->data.expr_stmt) {
+            char *value_str = node_to_str(node->data.return_stmt->data.expr_stmt);
+            copy_str_into_string(string, value_str);
+            free(value_str);
+        }
+
+        copy_str_into_string(string, ";");
+        break;
+    case NODE_EXPR_STMT:
+        if (node->data.expr_stmt == NULL) {
+            return NULL;
+        }
+        return NULL;
+        // char *expr_str = expr_to_str(node->data.expr_stmt);
+        // return expr_str;
+    default:
+        assert(1 != 1);
+    }
+
+    char *str = get_str_from_string(string);
+    cleanup_string(string);
+    return str;
+}
+
+char *program_to_str(Program *program)
+{
+    char **strs = malloc(program->size * sizeof(char *));
+    char *result = concat_cstrs(strs, program->size);
+    for (size_t i = 0; i < program->size; i++) {
+        free(strs[i]);
+    }
+    free(strs);
+    return result;
 }

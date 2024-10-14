@@ -1,7 +1,7 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
-#define MAX_IDENTIFIER_SIZE 40
+#define MAX_IDENTIFIER_SIZE 20
 #define MAX_INT_SIZE 20
 #define MAX_TOKEN_LITERAL_SIZE 20
 

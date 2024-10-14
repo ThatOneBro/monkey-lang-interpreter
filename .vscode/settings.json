@@ -9,7 +9,21 @@
     "lexer.h": "c",
     "parser.h": "c",
     "string.h": "c",
-    "token.h": "c"
+    "token.h": "c",
+    "__locale": "c",
+    "string": "c",
+    "string_view": "c",
+    "array": "cpp",
+    "str_utils.h": "c",
+    "__bit_reference": "c",
+    "__split_buffer": "c",
+    "vector": "c",
+    "__hash_table": "c",
+    "bitset": "c",
+    "initializer_list": "c",
+    "unordered_map": "c",
+    "sstream": "c",
+    "__node_handle": "c"
   },
   "editor.tabSize": 4
 }
