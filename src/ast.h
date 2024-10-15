@@ -1,6 +1,7 @@
 #ifndef AST_H
 #define AST_H
 
+#include "globals.h"
 #include "token.h"
 #include <stddef.h>
 
@@ -8,8 +9,7 @@ typedef enum ASTNodeType {
     NODE_LET_STMT,
     NODE_RETURN_STMT,
     NODE_EXPR_STMT,
-    NODE_BINARY_EXPR,
-    NODE_UNARY_EXPR,
+    NODE_PREFIX_EXPR,
     NODE_LITERAL,
     NODE_IDENTIFIER
 } ASTNodeType;
@@ -27,6 +27,7 @@ typedef union Value {
     int int_value;
     float float_value;
     char *string_value;
+    bool boolean_value;
 } Value;
 
 typedef enum LiteralType {
@@ -40,16 +41,11 @@ typedef struct Literal {
     LiteralType type;
 } Literal;
 
-typedef struct BinaryExpr {
-    struct ASTNode *left;
+typedef struct PrefixExpr {
+    Token token;
     struct ASTNode *right;
     OperatorType operator;
-} BinaryExpr;
-
-typedef struct UnaryExpr {
-    struct ASTNode *operand;
-    OperatorType operator;
-} UnaryExpr;
+} PrefixExpr;
 
 typedef struct LetStmt {
     struct ASTNode *left;
@@ -61,8 +57,7 @@ typedef struct ASTNode {
         LetStmt let_stmt;
         struct ASTNode *expr_stmt;
         struct ASTNode *return_stmt;
-        BinaryExpr binary_expr;
-        UnaryExpr unary_expr;
+        PrefixExpr prefix_expr;
         Literal literal;
         char identifier[MAX_IDENTIFIER_SIZE];
     } data;

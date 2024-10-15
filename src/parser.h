@@ -51,6 +51,7 @@ extern ASTNode *parse_expression_statement(Parser *parser);
 extern ASTNode *parse_expression(Parser *parser, Precedence precedence);
 extern ASTNode *parse_identifier(Parser *parser);
 extern ASTNode *parse_integer_literal(Parser *parser);
+extern ASTNode *parse_prefix_expression(Parser *parser);
 
 extern ParserFn get_prefix_fn(TokenType type);
 extern ParserFn get_infix_fn(TokenType type);
@@ -63,6 +64,7 @@ extern void cleanup_error_arraylist(ErrorArrayList *list);
 extern inline bool compare_curr_token_type(Parser *parser, TokenType tok_type);
 extern inline bool compare_peek_token_type(Parser *parser, TokenType tok_type);
 extern inline bool expect_peek(Parser *parser, TokenType tok_type);
-extern inline void *report_peek_error(Parser *parser, TokenType tok_type);
+extern inline void report_peek_error(Parser *parser, TokenType tok_type);
+extern inline void report_no_prefix_error(Parser *parser, TokenType tok_type);
 
 #endif // PARSER_H

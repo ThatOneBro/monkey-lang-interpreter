@@ -19,6 +19,13 @@ void check_parser_errors(Parser *parser)
     assert(1 != 1);
 }
 
+void test_integer_literal(ASTNode *expr, int64_t val)
+{
+    assert(expr->type == NODE_LITERAL);
+    assert(expr->data.literal.type == LITERAL_INT);
+    assert(expr->data.literal.value.int_value == val);
+}
+
 TEST_CASE(let_statement)
 {
     const char input[]
@@ -98,6 +105,9 @@ TEST_CASE(identifier_expression)
     assert(statement->data.expr_stmt->type == NODE_IDENTIFIER);
     assert(strcmp(statement->data.expr_stmt->data.identifier, "foobar") == 0);
     assert(strcmp(statement->data.expr_stmt->token_literal, "foobar") == 0);
+
+    cleanup_program(program);
+    cleanup_parser(parser);
 }
 
 TEST_CASE(integer_literal_expression)
@@ -121,6 +131,43 @@ TEST_CASE(integer_literal_expression)
     assert(statement->data.expr_stmt->data.literal.type == LITERAL_INT);
     assert(statement->data.expr_stmt->data.literal.value.int_value == 10);
     assert(strcmp(statement->data.expr_stmt->token_literal, "10") == 0);
+
+    cleanup_program(program);
+    cleanup_parser(parser);
+}
+
+TEST_CASE(parsing_prefix_operator)
+{
+    struct {
+        const char *input;
+        const char *operator;
+        int64_t int_value;
+    } prefix_tests[] = {
+        { "!5;", "!", 5 },
+        { "-15;", "-", 15 }
+    };
+
+    size_t test_count = sizeof(prefix_tests) / sizeof(prefix_tests[0]);
+
+    for (size_t i = 0; i < test_count; i++) {
+        Parser *parser = make_parser(prefix_tests[i].input);
+        Program *program = parse_program(parser);
+
+        check_parser_errors(parser);
+
+        assert(program != NULL);
+        assert(program->size == 1);
+
+        ASTNode *statement = get_nth_statement(program, 0);
+        assert(statement != NULL);
+        assert(statement->type == NODE_EXPR_STMT);
+        assert(statement->data.expr_stmt);
+
+        test_integer_literal(statement->data.expr_stmt->data.prefix_expr.right, prefix_tests[i].int_value);
+
+        cleanup_program(program);
+        cleanup_parser(parser);
+    }
 }
 
 RUN_TESTS()

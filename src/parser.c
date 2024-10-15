@@ -12,9 +12,11 @@
 
 static Token EMPTY_TOKEN = { TOKEN_ILLEGAL, "\0" };
 
-static ParserLookupEntry parser_fns[2] = {
+static ParserLookupEntry parser_fns[4] = {
     { .type = TOKEN_IDENT, .prefix_fn = parse_identifier, .infix_fn = NULL },
-    { .type = TOKEN_INT, .prefix_fn = parse_integer_literal, .infix_fn = NULL }
+    { .type = TOKEN_INT, .prefix_fn = parse_integer_literal, .infix_fn = NULL },
+    { .type = TOKEN_BANG, .prefix_fn = parse_prefix_expression, .infix_fn = NULL },
+    { .type = TOKEN_MINUS, .prefix_fn = parse_prefix_expression, .infix_fn = NULL }
 };
 
 Parser *make_parser(char *input)
@@ -142,6 +144,7 @@ ASTNode *parse_expression(Parser *parser, Precedence precedence)
 {
     ParserFn prefix_fn = get_prefix_fn(parser->curr_token.type);
     if (prefix_fn == NULL) {
+        report_no_prefix_error(parser, parser->curr_token.type);
         return NULL;
     }
     ASTNode *left_expr = prefix_fn(parser);
@@ -164,6 +167,20 @@ ASTNode *parse_integer_literal(Parser *parser)
     strcpy(&node->token_literal, parser->curr_token.literal);
     node->data.literal.type = LITERAL_INT;
     node->data.literal.value.int_value = atoi(parser->curr_token.literal);
+    return node;
+}
+
+ASTNode *parse_prefix_expression(Parser *parser)
+{
+    ASTNode *node = make_ast_node(parser->backing_node_list);
+    node->type = NODE_PREFIX_EXPR;
+    strcpy(&node->token_literal, parser->curr_token.literal);
+    memcpy(&node->data.prefix_expr.token, &parser->curr_token, sizeof(Token));
+
+    parse_next_token(parser);
+
+    node->data.prefix_expr.right = parse_expression(parser, PREFIX);
+
     return node;
 }
 
@@ -243,10 +260,18 @@ inline bool expect_peek(Parser *parser, TokenType tok_type)
     }
 }
 
-inline void *report_peek_error(Parser *parser, TokenType tok_type)
+inline void report_peek_error(Parser *parser, TokenType tok_type)
 {
     size_t total_len = snprintf(NULL, 0, "Expected next token to be %s, got %s instead", token_type_to_str(tok_type), token_type_to_str(parser->peek_token.type));
     char *error = malloc(total_len + 1); // We add one for sentinel character '\0'
     sprintf(error, "Expected next token to be %s, got %s instead", token_type_to_str(tok_type), token_type_to_str(parser->peek_token.type));
+    add_error_to_arraylist(parser->errors, error);
+}
+
+inline void report_no_prefix_error(Parser *parser, TokenType tok_type)
+{
+    size_t total_len = snprintf(NULL, 0, "No prefix parse function for %s found", token_type_to_str(tok_type));
+    char *error = malloc(total_len + 1); // We add one for sentinel character '\0'
+    sprintf(error, "No prefix parse function for %s found", token_type_to_str(tok_type));
     add_error_to_arraylist(parser->errors, error);
 }
