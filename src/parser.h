@@ -7,13 +7,13 @@
 
 typedef enum Precedence {
     _, // IOTA
-    LOWEST,
-    EQUALS, // ==
-    LESSGREATER, // > or <
-    SUM, // +
-    PRODUCT, // *
-    PREFIX, // -X or !X
-    CALL, // myFunction(X)
+    PREC_LOWEST,
+    PREC_EQUALS, // ==
+    PREC_LESSGREATER, // > or <
+    PREC_SUM, // +
+    PREC_PRODUCT, // *
+    PREC_PREFIX, // -X or !X
+    PREC_CALL, // myFunction(X)
 } Precedence;
 
 typedef struct ErrorArrayList {
@@ -30,13 +30,19 @@ typedef struct Parser {
     ErrorArrayList *errors;
 } Parser;
 
-typedef ASTNode *(*ParserFn)(Parser *parser);
+typedef ASTNode *(*PrefixFn)(Parser *parser);
+typedef ASTNode *(*InfixFn)(Parser *parser, ASTNode *left);
 
 typedef struct ParserLookupEntry {
     TokenType type;
-    void *prefix_fn;
-    void *infix_fn;
+    PrefixFn prefix_fn;
+    InfixFn infix_fn;
 } ParserLookupEntry;
+
+typedef struct PrecedenceEntry {
+    TokenType type;
+    Precedence precedence;
+} PrecedenceEntry;
 
 extern Parser *make_parser(char *input);
 extern void cleanup_parser(Parser *parser);
@@ -52,9 +58,12 @@ extern ASTNode *parse_expression(Parser *parser, Precedence precedence);
 extern ASTNode *parse_identifier(Parser *parser);
 extern ASTNode *parse_integer_literal(Parser *parser);
 extern ASTNode *parse_prefix_expression(Parser *parser);
+extern ASTNode *parse_infix_expression(Parser *parser, ASTNode *left);
 
-extern ParserFn get_prefix_fn(TokenType type);
-extern ParserFn get_infix_fn(TokenType type);
+extern PrefixFn get_prefix_fn(TokenType type);
+extern InfixFn get_infix_fn(TokenType type);
+extern Precedence get_current_precedence(Parser *parser);
+extern Precedence get_peek_precedence(Parser *parser);
 
 extern ErrorArrayList *make_error_arraylist(void);
 extern void add_error_to_arraylist(ErrorArrayList *list, char *error);

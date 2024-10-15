@@ -171,58 +171,47 @@ TEST_CASE(parsing_prefix_operator)
     }
 }
 
-// TEST_CASE(parsing_infix_operator)
-// {
-//     struct InfixTest {
-//         const char *input;
-//         int64_t left_value;
-//         const char *operator;
-//         int64_t right_value;
-//     };
+TEST_CASE(parsing_infix_operator)
+{
+    struct {
+        const char *input;
+        int64_t left_value;
+        const char *operator;
+        int64_t right_value;
+    } infix_tests[] = {
+        { "5 + 5;", 5, "+", 5 },
+        { "5 - 5;", 5, "-", 5 },
+        { "5 * 5;", 5, "*", 5 },
+        { "5 / 5;", 5, "/", 5 },
+        { "5 > 5;", 5, ">", 5 },
+        { "5 < 5;", 5, "<", 5 },
+        { "5 == 5;", 5, "==", 5 },
+        { "5 != 5;", 5, "!=", 5 }
+    };
 
-//     struct InfixTest infixTests[] = {
-//         { "5 + 5;", 5, "+", 5 },
-//         { "5 - 5;", 5, "-", 5 },
-//         { "5 * 5;", 5, "*", 5 },
-//         { "5 / 5;", 5, "/", 5 },
-//         { "5 > 5;", 5, ">", 5 },
-//         { "5 < 5;", 5, "<", 5 },
-//         { "5 == 5;", 5, "==", 5 },
-//         { "5 != 5;", 5, "!=", 5 }
-//     };
+    size_t test_count = sizeof(infix_tests) / sizeof(infix_tests[0]);
 
-//     const size_t infixTestsCount = sizeof(infixTests) / sizeof(infixTests[0]);
-//     struct {
-//         const char *input;
-//         OperatorType operator;
-//         int64_t int_value;
-//     } prefix_tests[] = {
-//         { "!5;", "!", 5 },
-//         { "-15;", "-", 15 }
-//     };
+    for (size_t i = 0; i < test_count; i++) {
+        Parser *parser = make_parser(infix_tests[i].input);
+        Program *program = parse_program(parser);
 
-//     size_t test_count = sizeof(prefix_tests) / sizeof(prefix_tests[0]);
+        check_parser_errors(parser);
 
-//     for (size_t i = 0; i < test_count; i++) {
-//         Parser *parser = make_parser(prefix_tests[i].input);
-//         Program *program = parse_program(parser);
+        assert(program != NULL);
+        assert(program->size == 1);
 
-//         check_parser_errors(parser);
+        ASTNode *statement = get_nth_statement(program, 0);
+        assert(statement != NULL);
+        assert(statement->type == NODE_EXPR_STMT);
+        assert(statement->data.expr_stmt);
 
-//         assert(program != NULL);
-//         assert(program->size == 1);
+        assert(strcmp(statement->data.expr_stmt->data.infix_expr.operator, infix_tests[i].operator) == 0);
+        test_integer_literal(statement->data.expr_stmt->data.infix_expr.left, infix_tests[i].left_value);
+        test_integer_literal(statement->data.expr_stmt->data.infix_expr.right, infix_tests[i].right_value);
 
-//         ASTNode *statement = get_nth_statement(program, 0);
-//         assert(statement != NULL);
-//         assert(statement->type == NODE_EXPR_STMT);
-//         assert(statement->data.expr_stmt);
-
-//         assert(statement->data.expr_stmt->data.prefix_expr.operator== prefix_tests[i].operator);
-//         test_integer_literal(statement->data.expr_stmt->data.prefix_expr.right, prefix_tests[i].int_value);
-
-//         cleanup_program(program);
-//         cleanup_parser(parser);
-//     }
-// }
+        cleanup_program(program);
+        cleanup_parser(parser);
+    }
+}
 
 RUN_TESTS()

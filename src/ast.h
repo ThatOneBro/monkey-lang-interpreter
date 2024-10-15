@@ -12,6 +12,7 @@ typedef enum ASTNodeType {
     NODE_RETURN_STMT,
     NODE_EXPR_STMT,
     NODE_PREFIX_EXPR,
+    NODE_INFIX_EXPR,
     NODE_LITERAL,
     NODE_IDENTIFIER
 } ASTNodeType;
@@ -43,11 +44,18 @@ typedef struct Literal {
     LiteralType type;
 } Literal;
 
-typedef struct PrefixExpr {
+typedef struct PrefixOpExpr {
     Token token;
     struct ASTNode *right;
     char operator[MAX_OPERATOR_SIZE];
-} PrefixExpr;
+} PrefixOpExpr;
+
+typedef struct InfixOpExpr {
+    Token token;
+    struct ASTNode *left;
+    struct ASTNode *right;
+    char operator[MAX_OPERATOR_SIZE];
+} InfixOpExpr;
 
 typedef struct LetStmt {
     struct ASTNode *left;
@@ -59,7 +67,8 @@ typedef struct ASTNode {
         LetStmt let_stmt;
         struct ASTNode *expr_stmt;
         struct ASTNode *return_stmt;
-        PrefixExpr prefix_expr;
+        PrefixOpExpr prefix_expr;
+        InfixOpExpr infix_expr;
         Literal literal;
         char identifier[MAX_IDENTIFIER_SIZE];
     } data;

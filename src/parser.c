@@ -12,11 +12,30 @@
 
 static Token EMPTY_TOKEN = { TOKEN_ILLEGAL, "\0" };
 
-static ParserLookupEntry parser_fns[4] = {
+static ParserLookupEntry parser_fns[11] = {
     { .type = TOKEN_IDENT, .prefix_fn = parse_identifier, .infix_fn = NULL },
     { .type = TOKEN_INT, .prefix_fn = parse_integer_literal, .infix_fn = NULL },
     { .type = TOKEN_BANG, .prefix_fn = parse_prefix_expression, .infix_fn = NULL },
-    { .type = TOKEN_MINUS, .prefix_fn = parse_prefix_expression, .infix_fn = NULL }
+
+    { .type = TOKEN_PLUS, .prefix_fn = NULL, .infix_fn = parse_infix_expression },
+    { .type = TOKEN_MINUS, .prefix_fn = parse_prefix_expression, .infix_fn = parse_infix_expression },
+    { .type = TOKEN_SLASH, .prefix_fn = NULL, .infix_fn = parse_infix_expression },
+    { .type = TOKEN_ASTERISK, .prefix_fn = NULL, .infix_fn = parse_infix_expression },
+    { .type = TOKEN_EQ, .prefix_fn = NULL, .infix_fn = parse_infix_expression },
+    { .type = TOKEN_NOT_EQ, .prefix_fn = NULL, .infix_fn = parse_infix_expression },
+    { .type = TOKEN_LT, .prefix_fn = NULL, .infix_fn = parse_infix_expression },
+    { .type = TOKEN_GT, .prefix_fn = NULL, .infix_fn = parse_infix_expression },
+};
+
+static PrecedenceEntry precedence_map[8] = {
+    { .type = TOKEN_EQ, .precedence = PREC_EQUALS },
+    { .type = TOKEN_NOT_EQ, .precedence = PREC_EQUALS },
+    { .type = TOKEN_LT, .precedence = PREC_LESSGREATER },
+    { .type = TOKEN_GT, .precedence = PREC_LESSGREATER },
+    { .type = TOKEN_PLUS, .precedence = PREC_SUM },
+    { .type = TOKEN_MINUS, .precedence = PREC_SUM },
+    { .type = TOKEN_SLASH, .precedence = PREC_PRODUCT },
+    { .type = TOKEN_ASTERISK, .precedence = PREC_PRODUCT },
 };
 
 Parser *make_parser(char *input)
@@ -131,7 +150,7 @@ ASTNode *parse_expression_statement(Parser *parser)
     ASTNode *node = make_ast_node(parser->backing_node_list);
     node->type = NODE_EXPR_STMT;
 
-    node->data.expr_stmt = parse_expression(parser, LOWEST);
+    node->data.expr_stmt = parse_expression(parser, PREC_LOWEST);
 
     if (compare_peek_token_type(parser, TOKEN_SEMICOLON)) {
         parse_next_token(parser);
@@ -142,12 +161,24 @@ ASTNode *parse_expression_statement(Parser *parser)
 
 ASTNode *parse_expression(Parser *parser, Precedence precedence)
 {
-    ParserFn prefix_fn = get_prefix_fn(parser->curr_token.type);
+    PrefixFn prefix_fn = get_prefix_fn(parser->curr_token.type);
     if (prefix_fn == NULL) {
         report_no_prefix_error(parser, parser->curr_token.type);
         return NULL;
     }
     ASTNode *left_expr = prefix_fn(parser);
+
+    while (!compare_peek_token_type(parser, TOKEN_SEMICOLON) && precedence < get_peek_precedence(parser)) {
+        InfixFn infix_fn = get_infix_fn(parser->peek_token.type);
+        if (infix_fn == NULL) {
+            return left_expr;
+        }
+
+        parse_next_token(parser);
+
+        left_expr = infix_fn(parser, left_expr);
+    }
+
     return left_expr;
 }
 
@@ -180,12 +211,30 @@ ASTNode *parse_prefix_expression(Parser *parser)
 
     parse_next_token(parser);
 
-    node->data.prefix_expr.right = parse_expression(parser, PREFIX);
+    node->data.prefix_expr.right = parse_expression(parser, PREC_PREFIX);
 
     return node;
 }
 
-ParserFn get_prefix_fn(TokenType type)
+ASTNode *parse_infix_expression(Parser *parser, ASTNode *left)
+{
+    ASTNode *node = make_ast_node(parser->backing_node_list);
+    node->type = NODE_INFIX_EXPR;
+    strcpy(&node->token_literal, parser->curr_token.literal);
+    strcpy(&node->data.infix_expr.operator, & parser->curr_token.literal);
+    memcpy(&node->data.infix_expr.token, &parser->curr_token, sizeof(Token));
+
+    node->data.infix_expr.left = left;
+
+    Precedence precedence = get_current_precedence(parser);
+    parse_next_token(parser);
+
+    node->data.infix_expr.right = parse_expression(parser, precedence);
+
+    return node;
+}
+
+PrefixFn get_prefix_fn(TokenType type)
 {
     size_t arr_len = sizeof(parser_fns) / sizeof(ParserLookupEntry);
     for (size_t i = 0; i < arr_len; i++) {
@@ -196,7 +245,7 @@ ParserFn get_prefix_fn(TokenType type)
     return NULL;
 }
 
-ParserFn get_infix_fn(TokenType type)
+InfixFn get_infix_fn(TokenType type)
 {
     size_t arr_len = sizeof(parser_fns) / sizeof(ParserLookupEntry);
     for (size_t i = 0; i < arr_len; i++) {
@@ -205,6 +254,28 @@ ParserFn get_infix_fn(TokenType type)
         }
     }
     return NULL;
+}
+
+Precedence get_current_precedence(Parser *parser)
+{
+    size_t arr_len = sizeof(precedence_map) / sizeof(PrecedenceEntry);
+    for (size_t i = 0; i < arr_len; i++) {
+        if (precedence_map[i].type == parser->curr_token.type) {
+            return precedence_map[i].precedence;
+        }
+    }
+    return PREC_LOWEST;
+}
+
+Precedence get_peek_precedence(Parser *parser)
+{
+    size_t arr_len = sizeof(precedence_map) / sizeof(PrecedenceEntry);
+    for (size_t i = 0; i < arr_len; i++) {
+        if (precedence_map[i].type == parser->peek_token.type) {
+            return precedence_map[i].precedence;
+        }
+    }
+    return PREC_LOWEST;
 }
 
 ErrorArrayList *make_error_arraylist(void)
