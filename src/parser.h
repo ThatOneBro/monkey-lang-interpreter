@@ -50,6 +50,7 @@ extern ASTNode *parse_expression_statement(Parser *parser);
 
 extern ASTNode *parse_expression(Parser *parser, Precedence precedence);
 extern ASTNode *parse_identifier(Parser *parser);
+extern ASTNode *parse_integer_literal(Parser *parser);
 
 extern ParserFn get_prefix_fn(TokenType type);
 extern ParserFn get_infix_fn(TokenType type);

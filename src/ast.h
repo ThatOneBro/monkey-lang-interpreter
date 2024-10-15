@@ -30,9 +30,9 @@ typedef union Value {
 } Value;
 
 typedef enum LiteralType {
-    TYPE_INT,
-    TYPE_FLOAT,
-    TYPE_STRING,
+    LITERAL_INT,
+    LITERAL_FLOAT,
+    LITERAL_STRING,
 } LiteralType;
 
 typedef struct Literal {

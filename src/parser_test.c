@@ -19,7 +19,7 @@ void check_parser_errors(Parser *parser)
     assert(1 != 1);
 }
 
-TEST_CASE(let_statements)
+TEST_CASE(let_statement)
 {
     const char input[]
         = "let x = 5;\n"
@@ -53,7 +53,7 @@ TEST_CASE(let_statements)
     cleanup_parser(parser);
 }
 
-TEST_CASE(return_statements)
+TEST_CASE(return_statement)
 {
     const char input[]
         = "return 5;\n"
@@ -78,7 +78,7 @@ TEST_CASE(return_statements)
     cleanup_parser(parser);
 }
 
-TEST_CASE(identifier_expressions)
+TEST_CASE(identifier_expression)
 {
     const char input[]
         = "foobar;\n";
@@ -97,6 +97,30 @@ TEST_CASE(identifier_expressions)
     assert(statement->data.expr_stmt);
     assert(statement->data.expr_stmt->type == NODE_IDENTIFIER);
     assert(strcmp(statement->data.expr_stmt->data.identifier, "foobar") == 0);
+    assert(strcmp(statement->data.expr_stmt->token_literal, "foobar") == 0);
+}
+
+TEST_CASE(integer_literal_expression)
+{
+    const char input[]
+        = "10;\n";
+
+    Parser *parser = make_parser(input);
+    Program *program = parse_program(parser);
+
+    check_parser_errors(parser);
+
+    assert(program != NULL);
+    assert(program->size == 1);
+
+    ASTNode *statement = get_nth_statement(program, 0);
+    assert(statement != NULL);
+    assert(statement->type == NODE_EXPR_STMT);
+    assert(statement->data.expr_stmt);
+    assert(statement->data.expr_stmt->type == NODE_LITERAL);
+    assert(statement->data.expr_stmt->data.literal.type == LITERAL_INT);
+    assert(statement->data.expr_stmt->data.literal.value.int_value == 10);
+    assert(strcmp(statement->data.expr_stmt->token_literal, "10") == 0);
 }
 
 RUN_TESTS()

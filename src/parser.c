@@ -12,7 +12,10 @@
 
 static Token EMPTY_TOKEN = { TOKEN_ILLEGAL, "\0" };
 
-static ParserLookupEntry parser_fns[] = { { .type = TOKEN_IDENT, .prefix_fn = parse_identifier, .infix_fn = NULL } };
+static ParserLookupEntry parser_fns[2] = {
+    { .type = TOKEN_IDENT, .prefix_fn = parse_identifier, .infix_fn = NULL },
+    { .type = TOKEN_INT, .prefix_fn = parse_integer_literal, .infix_fn = NULL }
+};
 
 Parser *make_parser(char *input)
 {
@@ -151,6 +154,16 @@ ASTNode *parse_identifier(Parser *parser)
     node->type = NODE_IDENTIFIER;
     strcpy(&node->token_literal, parser->curr_token.literal);
     strcpy(&node->data.identifier, parser->curr_token.literal);
+    return node;
+}
+
+ASTNode *parse_integer_literal(Parser *parser)
+{
+    ASTNode *node = make_ast_node(parser->backing_node_list);
+    node->type = NODE_LITERAL;
+    strcpy(&node->token_literal, parser->curr_token.literal);
+    node->data.literal.type = LITERAL_INT;
+    node->data.literal.value.int_value = atoi(parser->curr_token.literal);
     return node;
 }
 
