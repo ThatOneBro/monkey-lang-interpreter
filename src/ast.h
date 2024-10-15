@@ -5,6 +5,8 @@
 #include "token.h"
 #include <stddef.h>
 
+#define MAX_OPERATOR_SIZE 4
+
 typedef enum ASTNodeType {
     NODE_LET_STMT,
     NODE_RETURN_STMT,
@@ -44,7 +46,7 @@ typedef struct Literal {
 typedef struct PrefixExpr {
     Token token;
     struct ASTNode *right;
-    OperatorType operator;
+    char operator[MAX_OPERATOR_SIZE];
 } PrefixExpr;
 
 typedef struct LetStmt {

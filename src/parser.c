@@ -175,6 +175,7 @@ ASTNode *parse_prefix_expression(Parser *parser)
     ASTNode *node = make_ast_node(parser->backing_node_list);
     node->type = NODE_PREFIX_EXPR;
     strcpy(&node->token_literal, parser->curr_token.literal);
+    strcpy(&node->data.prefix_expr.operator, & parser->curr_token.literal);
     memcpy(&node->data.prefix_expr.token, &parser->curr_token, sizeof(Token));
 
     parse_next_token(parser);
