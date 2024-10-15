@@ -78,4 +78,25 @@ TEST_CASE(return_statements)
     cleanup_parser(parser);
 }
 
+TEST_CASE(identifier_expressions)
+{
+    const char input[]
+        = "foobar;\n";
+
+    Parser *parser = make_parser(input);
+    Program *program = parse_program(parser);
+
+    check_parser_errors(parser);
+
+    assert(program != NULL);
+    assert(program->size == 1);
+
+    ASTNode *statement = get_nth_statement(program, 0);
+    assert(statement != NULL);
+    assert(statement->type == NODE_EXPR_STMT);
+    assert(statement->data.expr_stmt);
+    assert(statement->data.expr_stmt->type == NODE_IDENTIFIER);
+    assert(strcmp(statement->data.expr_stmt->data.identifier, "foobar") == 0);
+}
+
 RUN_TESTS()

@@ -8,7 +8,7 @@ INIT_TEST_HARNESS()
 
 TEST_CASE(program_to_str)
 {
-    ASTNode *node_list = make_ast_node_array_list();
+    ASTNodeArrayList *node_list = make_ast_node_array_list();
     Program *program = make_program();
 
     ASTNode *let_stmt_node = make_ast_node(node_list);

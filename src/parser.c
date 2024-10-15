@@ -12,6 +12,8 @@
 
 static Token EMPTY_TOKEN = { TOKEN_ILLEGAL, "\0" };
 
+static ParserLookupEntry parser_fns[] = { { .type = TOKEN_IDENT, .prefix_fn = parse_identifier, .infix_fn = NULL } };
+
 Parser *make_parser(char *input)
 {
     Parser *parser = (Parser *)malloc(sizeof(struct Parser));
@@ -68,7 +70,7 @@ ASTNode *parse_statement(Parser *parser)
         return parse_return_statement(parser);
         break;
     default:
-        return NULL;
+        return parse_expression_statement(parser);
     }
 }
 
@@ -117,6 +119,61 @@ ASTNode *parse_return_statement(Parser *parser)
     }
 
     return node;
+}
+
+ASTNode *parse_expression_statement(Parser *parser)
+{
+    ASTNode *node = make_ast_node(parser->backing_node_list);
+    node->type = NODE_EXPR_STMT;
+
+    node->data.expr_stmt = parse_expression(parser, LOWEST);
+
+    if (compare_peek_token_type(parser, TOKEN_SEMICOLON)) {
+        parse_next_token(parser);
+    }
+
+    return node;
+}
+
+ASTNode *parse_expression(Parser *parser, Precedence precedence)
+{
+    ParserFn prefix_fn = get_prefix_fn(parser->curr_token.type);
+    if (prefix_fn == NULL) {
+        return NULL;
+    }
+    ASTNode *left_expr = prefix_fn(parser);
+    return left_expr;
+}
+
+ASTNode *parse_identifier(Parser *parser)
+{
+    ASTNode *node = make_ast_node(parser->backing_node_list);
+    node->type = NODE_IDENTIFIER;
+    strcpy(&node->token_literal, parser->curr_token.literal);
+    strcpy(&node->data.identifier, parser->curr_token.literal);
+    return node;
+}
+
+ParserFn get_prefix_fn(TokenType type)
+{
+    size_t arr_len = sizeof(parser_fns) / sizeof(ParserLookupEntry);
+    for (size_t i = 0; i < arr_len; i++) {
+        if (parser_fns[i].type == type) {
+            return parser_fns[i].prefix_fn;
+        }
+    }
+    return NULL;
+}
+
+ParserFn get_infix_fn(TokenType type)
+{
+    size_t arr_len = sizeof(parser_fns) / sizeof(ParserLookupEntry);
+    for (size_t i = 0; i < arr_len; i++) {
+        if (parser_fns[i].type == type) {
+            return parser_fns[i].infix_fn;
+        }
+    }
+    return NULL;
 }
 
 ErrorArrayList *make_error_arraylist(void)
