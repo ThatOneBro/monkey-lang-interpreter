@@ -214,4 +214,53 @@ TEST_CASE(parsing_infix_operator)
     }
 }
 
+TEST_CASE(operator_precedence_parsing)
+{
+    struct {
+        const char *input;
+        const char *expected;
+    } tests[] = {
+        { "-a * b", "((-a) * b)" },
+        { "!-a", "(!(-a))" },
+        { "a + b + c", "((a + b) + c)" },
+        { "a + b - c", "((a + b) - c)" },
+        { "a * b * c", "((a * b) * c)" },
+        { "a * b / c", "((a * b) / c)" },
+        { "a + b / c", "(a + (b / c))" },
+        { "a + b * c + d / e - f", "(((a + (b * c)) + (d / e)) - f)" },
+        { "3 + 4; -5 * 5", "(3 + 4)((-5) * 5)" },
+        { "5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))" },
+        { "5 < 4 != 3 > 4", "((5 < 4) != (3 > 4))" },
+        { "3 + 4 * 5 == 3 * 1 + 4 * 5", "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))" }
+    };
+
+    size_t num_tests = sizeof(tests) / sizeof(tests[0]);
+    int passed = 0;
+    int failed = 0;
+
+    for (size_t i = 0; i < num_tests; i++) {
+        Parser *parser = make_parser(tests[i].input);
+        Program *program = parse_program(parser);
+
+        check_parser_errors(parser);
+
+        assert(program);
+
+        char *actual = program_to_str(program);
+        if (strcmp(actual, tests[i].expected) == 0) {
+            passed++;
+        } else {
+            failed++;
+            printf("Test failed: input='%s', expected='%s', got='%s'\n",
+                tests[i].input, tests[i].expected, actual);
+        }
+
+        cleanup_program(program);
+        cleanup_parser(parser);
+    }
+
+    printf("Tests passed: %d\n", passed);
+    printf("Tests failed: %d\n", failed);
+}
+
 RUN_TESTS()

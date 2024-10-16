@@ -118,6 +118,9 @@ ASTNode *get_nth_statement(Program *program, size_t n)
 
 char *node_to_str(ASTNode *node)
 {
+    if (node == NULL) {
+        return NULL;
+    }
     String *string = make_string();
     switch (node->type) {
     case NODE_LET_STMT:
@@ -148,20 +151,54 @@ char *node_to_str(ASTNode *node)
         if (node->data.expr_stmt == NULL) {
             return NULL;
         }
-        return NULL;
-        // char *expr_str = expr_to_str(node->data.expr_stmt);
-        // return expr_str;
+        return node_to_str(node->data.expr_stmt);
     case NODE_IDENTIFIER:
-        // TODO: Handle with expr_to_str?
         assert(node->data.identifier);
         assert(node->token_literal);
         return strdup(node->token_literal);
+    case NODE_PREFIX_EXPR:
+        assert(node->data.prefix_expr.operator);
+        assert(node->data.prefix_expr.right);
+
+        copy_str_into_string(string, "(");
+        copy_str_into_string(string, node->data.prefix_expr.operator);
+        char *value_str = node_to_str(node->data.prefix_expr.right);
+        copy_str_into_string(string, value_str);
+        copy_str_into_string(string, ")");
+
+        free(value_str);
+        break;
+    case NODE_INFIX_EXPR:
+        assert(node->data.infix_expr.left);
+        assert(node->data.infix_expr.operator);
+        assert(node->data.infix_expr.right);
+
+        copy_str_into_string(string, "(");
+
+        char *value_str_left = node_to_str(node->data.infix_expr.left);
+        copy_str_into_string(string, value_str_left);
+
+        copy_str_into_string(string, " ");
+        copy_str_into_string(string, node->data.infix_expr.operator);
+        copy_str_into_string(string, " ");
+
+        char *value_str_right = node_to_str(node->data.infix_expr.right);
+        copy_str_into_string(string, value_str_right);
+
+        copy_str_into_string(string, ")");
+
+        free(value_str_left);
+        free(value_str_right);
+        break;
+    case NODE_LITERAL:
+        copy_str_into_string(string, node->token_literal);
+        break;
     default:
         printf("Node type: %d\n", node->type);
         assert(1 != 1);
     }
 
-    printf("String val: %s", string->array);
+    printf("String val: %s\n", string->array);
     char *str = get_str_from_string(string);
     cleanup_string(string);
     return str;
