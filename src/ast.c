@@ -198,7 +198,6 @@ char *node_to_str(ASTNode *node)
         assert(1 != 1);
     }
 
-    printf("String val: %s\n", string->array);
     char *str = get_str_from_string(string);
     cleanup_string(string);
     return str;

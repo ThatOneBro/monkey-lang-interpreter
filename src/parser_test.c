@@ -26,6 +26,13 @@ void test_integer_literal(ASTNode *expr, int64_t val)
     assert(expr->data.literal.value.int_value == val);
 }
 
+void test_identifier(ASTNode *expr, char *val)
+{
+    assert(expr->type == NODE_IDENTIFIER);
+    assert(strcmp(expr->data.identifier, val) == 0);
+    assert(strcmp(expr->token_literal, val) == 0);
+}
+
 TEST_CASE(let_statement)
 {
     const char input[]

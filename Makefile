@@ -13,7 +13,7 @@ REPL_OBJ := $(BUILD_DIR)/repl.o
 REPL_BIN := $(BIN_DIR)/repl
 
 # Find all .c files not ending with _test.c in the src directory
-SOURCES = $(filter-out %_test.c, $(wildcard $(SRC_DIR)/*.c))
+SOURCES = $(filter-out %_test.c, $(filter-out $(SRC_DIR)/repl.c, $(wildcard $(SRC_DIR)/*.c)))
 
 # Generate object file names for non-test files
 OBJECTS = $(SOURCES:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
@@ -24,31 +24,24 @@ TEST_SOURCES = $(wildcard $(SRC_DIR)/*_test.c)
 # Generate names for test executables
 TEST_EXECUTABLES = $(TEST_SOURCES:$(SRC_DIR)/%_test.c=$(BUILD_DIR)/%_test)
 
-# Define dependencies (adjust these based on your actual dependencies)
-$(BUILD_DIR)/token.o:
-$(BUILD_DIR)/lexer.o: $(BUILD_DIR)/token.o
-$(BUILD_DIR)/ast.o: $(BUILD_DIR)/token.o
-$(BUILD_DIR)/parser.o: $(BUILD_DIR)/lexer.o $(BUILD_DIR)/ast.o
-$(BUILD_DIR)/repl.o: $(BUILD_DIR)/lexer.o
-
 # Default target builds all objects and test executables
 all: $(BUILD_DIR) $(BIN_DIR) $(OBJECTS) $(TEST_EXECUTABLES) $(REPL_BIN)
+
+# Build repl executable
+$(REPL_BIN): $(BUILD_DIR)/repl.o $(OBJECTS) | $(BIN_DIR)
+	$(CC) $(CFLAGS) $^ -o $@
 
 # Rule to create build directory
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
+# Rule to build test executables
+$(BUILD_DIR)/%_test: $(SRC_DIR)/%_test.c $(OBJECTS)
+	$(CC) $(CFLAGS) -o $@ $^
+
 # Rule to build object files from non-test .c files
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
-
-# Rule to build test executables
-$(BUILD_DIR)/%_test: $(SRC_DIR)/%_test.c $(filter-out $(BUILD_DIR)/repl.o,$(wildcard $(BUILD_DIR)/*.o))
-	$(CC) $(CFLAGS) -o $@ $^
-
-# Build repl executable
-$(REPL_BIN): $(OBJECTS) | $(BIN_DIR)
-	$(CC) $(CFLAGS) $^ -o $@
 
 $(BIN_DIR):
 	mkdir -p $@
