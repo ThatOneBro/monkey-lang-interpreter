@@ -12,7 +12,7 @@
 
 static Token EMPTY_TOKEN = { TOKEN_ILLEGAL, "\0" };
 
-static ParserLookupEntry parser_fns[11] = {
+static ParserLookupEntry parser_fns[] = {
     { .type = TOKEN_IDENT, .prefix_fn = parse_identifier, .infix_fn = NULL },
     { .type = TOKEN_INT, .prefix_fn = parse_integer_literal, .infix_fn = NULL },
     { .type = TOKEN_BANG, .prefix_fn = parse_prefix_expression, .infix_fn = NULL },
@@ -25,9 +25,12 @@ static ParserLookupEntry parser_fns[11] = {
     { .type = TOKEN_NOT_EQ, .prefix_fn = NULL, .infix_fn = parse_infix_expression },
     { .type = TOKEN_LT, .prefix_fn = NULL, .infix_fn = parse_infix_expression },
     { .type = TOKEN_GT, .prefix_fn = NULL, .infix_fn = parse_infix_expression },
+
+    { .type = TOKEN_TRUE, .prefix_fn = parse_boolean, .infix_fn = NULL },
+    { .type = TOKEN_FALSE, .prefix_fn = parse_boolean, .infix_fn = NULL },
 };
 
-static PrecedenceEntry precedence_map[8] = {
+static PrecedenceEntry precedence_map[] = {
     { .type = TOKEN_EQ, .precedence = PREC_EQUALS },
     { .type = TOKEN_NOT_EQ, .precedence = PREC_EQUALS },
     { .type = TOKEN_LT, .precedence = PREC_LESSGREATER },
@@ -112,7 +115,8 @@ ASTNode *parse_let_statement(Parser *parser)
     ASTNode *identifier_node = make_ast_node(parser->backing_node_list);
     identifier_node->type = NODE_IDENTIFIER;
 
-    strcpy(identifier_node->data.identifier, parser->curr_token.literal);
+    identifier_node->data.literal.type = LITERAL_IDENTIFIER;
+    strcpy(&identifier_node->data.literal.value, parser->curr_token.literal);
     strcpy(identifier_node->token_literal, parser->curr_token.literal);
 
     node->data.let_stmt.left = identifier_node;
@@ -187,7 +191,8 @@ ASTNode *parse_identifier(Parser *parser)
     ASTNode *node = make_ast_node(parser->backing_node_list);
     node->type = NODE_IDENTIFIER;
     strcpy(&node->token_literal, parser->curr_token.literal);
-    strcpy(&node->data.identifier, parser->curr_token.literal);
+    node->data.literal.type = LITERAL_IDENTIFIER;
+    strcpy(&node->data.literal.value.identifier, parser->curr_token.literal);
     return node;
 }
 
@@ -198,6 +203,16 @@ ASTNode *parse_integer_literal(Parser *parser)
     strcpy(&node->token_literal, parser->curr_token.literal);
     node->data.literal.type = LITERAL_INT;
     node->data.literal.value.int_value = atoi(parser->curr_token.literal);
+    return node;
+}
+
+ASTNode *parse_boolean(Parser *parser)
+{
+    ASTNode *node = make_ast_node(parser->backing_node_list);
+    node->type = NODE_LITERAL;
+    strcpy(&node->token_literal, parser->curr_token.literal);
+    node->data.literal.type = LITERAL_BOOL;
+    node->data.literal.value.boolean_value = compare_curr_token_type(parser, TOKEN_TRUE);
     return node;
 }
 

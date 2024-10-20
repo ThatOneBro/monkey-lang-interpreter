@@ -1,5 +1,6 @@
 #include "ast.h"
 #include "arrlist_utils.h"
+#include "errors.h"
 #include "str_utils.h"
 #include <assert.h>
 #include <stddef.h>
@@ -104,17 +105,9 @@ void add_ast_node_to_program(Program *program, ASTNode *node)
 
 ASTNode *get_nth_statement(Program *program, size_t n)
 {
-    assert(n >= 0 && n < program->size);
+    ASSERT(n >= 0 && n < program->size, "Program does not have a statement at index %zu", n);
     return program->array[n];
 }
-
-// char *expr_to_str(ASTNode *node)
-// {
-//     switch (node->type) {
-//     case NODE_BINARY_EXPR:
-//         break;
-//     }
-// }
 
 char *node_to_str(ASTNode *node)
 {
@@ -125,7 +118,7 @@ char *node_to_str(ASTNode *node)
     switch (node->type) {
     case NODE_LET_STMT:
         copy_str_into_string(string, "let ");
-        copy_str_into_string(string, node->data.let_stmt.left->data.identifier);
+        copy_str_into_string(string, node->data.let_stmt.left->data.literal.value.identifier);
         copy_str_into_string(string, " = ");
 
         if (node->data.let_stmt.right) {
@@ -153,12 +146,12 @@ char *node_to_str(ASTNode *node)
         }
         return node_to_str(node->data.expr_stmt);
     case NODE_IDENTIFIER:
-        assert(node->data.identifier);
-        assert(node->token_literal);
+        ASSERT(node->data.literal.value.identifier, "Null identifier in identifier node");
+        ASSERT(node->token_literal, "Null token literal in identifier node");
         return strdup(node->token_literal);
     case NODE_PREFIX_EXPR:
-        assert(node->data.prefix_expr.operator);
-        assert(node->data.prefix_expr.right);
+        ASSERT(node->data.prefix_expr.operator, "Null operator in prefix expression");
+        ASSERT(node->data.prefix_expr.right, "Null right node in prefix expression");
 
         copy_str_into_string(string, "(");
         copy_str_into_string(string, node->data.prefix_expr.operator);
@@ -169,9 +162,9 @@ char *node_to_str(ASTNode *node)
         free(value_str);
         break;
     case NODE_INFIX_EXPR:
-        assert(node->data.infix_expr.left);
-        assert(node->data.infix_expr.operator);
-        assert(node->data.infix_expr.right);
+        ASSERT(node->data.infix_expr.left, "Null left node in infix expression");
+        ASSERT(node->data.infix_expr.operator, "Null operator in infix expression");
+        ASSERT(node->data.infix_expr.right, "Null right node in infix expression");
 
         copy_str_into_string(string, "(");
 
@@ -195,7 +188,7 @@ char *node_to_str(ASTNode *node)
         break;
     default:
         printf("Node type: %d\n", node->type);
-        assert(1 != 1);
+        ASSERT(1 != 1, "Invalid node type found: %d\n", node->type);
     }
 
     char *str = get_str_from_string(string);
@@ -215,4 +208,20 @@ char *program_to_str(Program *program)
     }
     free(strs);
     return result;
+}
+
+static const char *NODE_TYPE_STR[] = {
+    [NODE_LET_STMT] = "LET_STMT",
+    [NODE_RETURN_STMT] = "RETURN_STMT",
+    [NODE_EXPR_STMT] = "EXPR_STMT",
+    [NODE_PREFIX_EXPR] = "PREFIX_EXPR",
+    [NODE_INFIX_EXPR] = "INFIX_EXPR",
+    [NODE_LITERAL] = "LITERAL",
+    [NODE_IDENTIFIER] = "NODE_IDENTIFIER",
+};
+
+const char *node_type_to_str(ASTNodeType t)
+{
+    assert(t >= 0 && t <= NODE_IDENTIFIER);
+    return NODE_TYPE_STR[t];
 }

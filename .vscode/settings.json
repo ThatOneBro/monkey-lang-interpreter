@@ -23,7 +23,10 @@
     "initializer_list": "c",
     "unordered_map": "c",
     "sstream": "c",
-    "__node_handle": "c"
+    "__node_handle": "c",
+    "test_utils.h": "c",
+    "errors.h": "c",
+    "__config": "cpp"
   },
   "editor.tabSize": 4
 }

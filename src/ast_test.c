@@ -19,7 +19,8 @@ TEST_CASE(program_to_str)
     ASTNode *ident_node = make_ast_node(node_list);
     ident_node->type = NODE_IDENTIFIER;
     strcpy(&ident_node->token_literal, "myVar");
-    strcpy(&ident_node->data.identifier, "myVar");
+    ident_node->data.literal.type = LITERAL_IDENTIFIER;
+    strcpy(&ident_node->data.literal.value.identifier, "myVar");
 
     let_stmt_node->data.let_stmt.left = ident_node;
 
@@ -27,7 +28,8 @@ TEST_CASE(program_to_str)
     ASTNode *value_node = make_ast_node(node_list);
     value_node->type = NODE_IDENTIFIER;
     strcpy(&value_node->token_literal, "anotherVar");
-    strcpy(&value_node->data.identifier, "anotherVar");
+    ident_node->data.literal.type = LITERAL_IDENTIFIER;
+    strcpy(&value_node->data.literal.value.identifier, "anotherVar");
 
     let_stmt_node->data.let_stmt.right = value_node;
 

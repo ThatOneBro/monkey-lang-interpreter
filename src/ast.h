@@ -26,21 +26,24 @@ typedef enum OperatorType {
     OP_NEGATE
 } OperatorType;
 
-typedef union Value {
+typedef union LiteralValue {
     int int_value;
     float float_value;
     char *string_value;
+    char identifier[MAX_IDENTIFIER_SIZE];
     bool boolean_value;
-} Value;
+} LiteralValue;
 
 typedef enum LiteralType {
     LITERAL_INT,
     LITERAL_FLOAT,
     LITERAL_STRING,
+    LITERAL_IDENTIFIER,
+    LITERAL_BOOL,
 } LiteralType;
 
 typedef struct Literal {
-    Value value;
+    LiteralValue value;
     LiteralType type;
 } Literal;
 
@@ -70,7 +73,6 @@ typedef struct ASTNode {
         PrefixOpExpr prefix_expr;
         InfixOpExpr infix_expr;
         Literal literal;
-        char identifier[MAX_IDENTIFIER_SIZE];
     } data;
     ASTNodeType type;
     char token_literal[MAX_TOKEN_LITERAL_SIZE];
@@ -87,6 +89,34 @@ typedef struct Program {
     size_t size;
     size_t capacity;
 } Program;
+
+#define ACCESS_INT(lit) ((lit).value.int_value)
+#define ACCESS_FLOAT(lit) ((lit).value.float_value)
+#define ACCESS_STRING(lit) ((lit).value.string_value)
+#define ACCESS_IDENTIFIER(lit) ((lit).value.identifier)
+#define ACCESS_BOOL(lit) ((lit).value.boolean_value)
+
+#define COMPARE_INT(lit, exp) ((lit).value.int_value == (exp))
+#define COMPARE_FLOAT(lit, exp) ((lit).value.float_value == (exp))
+#define COMPARE_STRING(lit, exp) (strcmp((lit).value.string_value, (exp)) == 0)
+#define COMPARE_IDENTIFIER(lit, exp) (strcmp((lit).value.identifier, (exp)) == 0)
+#define COMPARE_BOOL(lit, exp) ((lit).value.boolean_value == (exp))
+
+// Type-safe access macro
+#define ACCESS_LITERAL_VALUE(lit, type)                                                         \
+    ((type) == LITERAL_INT ? ACCESS_INT(lit) : (type) == LITERAL_FLOAT ? ACCESS_FLOAT(lit)      \
+            : (type) == LITERAL_STRING                                 ? ACCESS_STRING(lit)     \
+            : (type) == LITERAL_IDENTIFIER                             ? ACCESS_IDENTIFIER(lit) \
+            : (type) == LITERAL_BOOL                                   ? ACCESS_BOOL(lit)       \
+                                                                       : (void)0)
+
+// Type-safe comparison macro
+#define COMPARE_LITERAL_VALUE(lit, type, expected)                                                                                           \
+    ((type) == LITERAL_INT ? COMPARE_INT(lit, (int)(expected)) : (type) == LITERAL_FLOAT ? COMPARE_FLOAT(lit, (float)(expected))             \
+            : (type) == LITERAL_STRING                                                   ? COMPARE_STRING(lit, (const char *)(expected))     \
+            : (type) == LITERAL_IDENTIFIER                                               ? COMPARE_IDENTIFIER(lit, (const char *)(expected)) \
+            : (type) == LITERAL_BOOL                                                     ? COMPARE_BOOL(lit, (bool)(expected))               \
+                                                                                         : FALSE)
 
 extern ASTNode *make_ast_node(ASTNodeArrayList *list);
 extern void cleanup_ast_node(ASTNode *node);
@@ -105,5 +135,6 @@ extern ASTNode *get_nth_statement(Program *program, size_t n);
 
 extern char *node_to_str(ASTNode *node);
 extern char *program_to_str(Program *program);
+extern const char *node_type_to_str(ASTNodeType t);
 
 #endif // AST_H
