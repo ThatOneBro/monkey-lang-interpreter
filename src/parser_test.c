@@ -59,12 +59,12 @@
         ASSERT(op_exp->type == NODE_INFIX_EXPR,                                                \
             "Node is not an infix expression.\nGot: %s", op_exp->type);                        \
                                                                                                \
-        ASSERT_LITERAL_EXPRESSION_##left_type(op_exp->left, left_value);                       \
+        ASSERT_LITERAL_EXPRESSION_##left_type(op_exp->data.infix_expr.left, left_value);       \
                                                                                                \
-        ASSERT(strcmp(op_exp->operator, operator) == 0,                                        \
-            "Operator is not '%s'\nGot: %s", operator, op_exp->operator);                      \
+        ASSERT(strcmp(op_exp->data.infix_expr.operator, operator) == 0,                        \
+            "Operator is not '%s'\nGot: %s", operator, op_exp->data.infix_expr.operator);      \
                                                                                                \
-        ASSERT_LITERAL_EXPRESSION_##right_type(op_exp->right, right_value);                    \
+        ASSERT_LITERAL_EXPRESSION_##right_type(op_exp->data.infix_expr.right, right_value);    \
     } while (0)
 
 // Helper macros for different types
@@ -255,8 +255,9 @@ TEST_CASE(boolean_literal_expressions)
     assert(statement->type == NODE_EXPR_STMT);
     ASSERT_LITERAL_EXPRESSION_BOOL(statement->data.expr_stmt, FALSE);
 
-    // statement = get_nth_statement(program, 2);
-    // ASSERT_INFIX_EXPRESSION_IDENTIFIER(statement, TRUE);
+    statement = get_nth_statement(program, 2);
+    assert(statement->type == NODE_EXPR_STMT);
+    ASSERT_INFIX_EXPRESSION(statement->data.expr_stmt, "foobar", "=", TRUE, IDENTIFIER, BOOL);
 
     //     statement = get_nth_statement(program, 3);
     // ASSERT_INFIX_EXPRESSION_IDENTIFIER(statement, TRUE);
